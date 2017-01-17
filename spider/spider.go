@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"regexp"
 	"time"
+
+	"golang.org/x/net/proxy"
 )
 
 const (
@@ -36,55 +37,96 @@ type giftData struct {
 	Error int `json:"error"`
 }
 
+type SpiderStatus int
+
+const (
+	StatusRunning SpiderStatus = iota
+	StatusClosed  SpiderStatus = iota
+	StatusError   SpiderStatus = iota
+)
+
 type Spider struct {
-	roomId  int
-	giftMap map[string]string
-	conn    net.Conn
-	msgChan chan map[string]string
+	roomId     int
+	giftMap    map[string]string
+	conn       net.Conn
+	msgChan    chan map[string]string
+	status     SpiderStatus
+	lastError  error
+	httpClient *http.Client
 }
 
-var msgRegex = regexp.MustCompile(`(.*?)@=(.*?)/`)
-
-func parseMessage(message string) map[string]string {
-	msg := make(map[string]string)
-
-	submatchs := msgRegex.FindAllStringSubmatch(message, -1)
-
-	for _, submatch := range submatchs {
-		msg[submatch[1]] = submatch[2]
-	}
-	return msg
-}
-
-func NewSpider(roomId int) *Spider {
+func NewSpider(roomId int, dialer proxy.Dialer) (*Spider, error) {
 	s := &Spider{
 		roomId:  roomId,
 		msgChan: make(chan map[string]string, 256),
+		status:  StatusRunning,
 	}
-
-	conn, err := net.Dial("tcp", openDouyuAddr)
+	var conn net.Conn
+	var err error
+	if dialer != nil {
+		conn, err = dialer.Dial("tcp", openDouyuAddr)
+		s.httpClient = &http.Client{
+			Transport: &http.Transport{
+				Dial: dialer,
+			},
+		}
+	} else {
+		conn, err = net.Dial("tcp", openDouyuAddr)
+		s.httpClient = http.DefaultClient
+	}
 	if err != nil {
-		log.Println(err)
-		return nil
+		s.status = StatusError
+		s.lastError = err
+		return nil, err
 	}
 	s.conn = conn
 	s.run()
-	return s
+	return s, nil
 }
 
 func (s *Spider) run() {
-	s.danmukuLogin()
-	s.danmukuJoin()
+	if err := s.danmukuLogin(); err != nil {
+		s.status = StatusError
+		s.lastError = err
+		return
+	}
+	if err := s.danmukuJoin(); err != nil {
+		s.status = StatusError
+		s.lastError = err
+		return
+	}
 	go func() {
 		for {
-			s.danmukuKeeplive()
+			if s.status != StatusRunning {
+				return
+			}
+
+			if err := s.danmukuKeeplive(); err != nil {
+				s.status = StatusError
+				s.lastError = err
+				return
+			}
 			time.Sleep(30 * time.Second)
 		}
 	}()
 
 	go func() {
+		defer func() {
+			close(s.msgChan)
+		}()
 		for {
-			s.danmukuReadAndPipe()
+			if s.status != StatusRunning {
+				return
+			}
+
+			message, err := s.danmukuReadAndPipe()
+			if err != nil {
+				s.status = StatusError
+				s.lastError = err
+				return
+			} else {
+				s.msgChan <- message
+			}
 		}
 	}()
 }
@@ -101,25 +143,28 @@ func (s *Spider) sendMsg(msg string) error {
 	return err
 }
 
-func (s *Spider) danmukuLogin() {
+func (s *Spider) danmukuLogin() error {
 	msg := fmt.Sprintf("type@=loginreq/roomid@=%d/", s.roomId)
 	if err := s.sendMsg(msg); err != nil {
-		log.Println(err)
+		return err
 	}
+	return nil
 }
 
-func (s *Spider) danmukuJoin() {
+func (s *Spider) danmukuJoin() error {
 	msg := fmt.Sprintf("type@=joingroup/rid@=%d/gid@=-9999/", s.roomId)
 	if err := s.sendMsg(msg); err != nil {
-		log.Println(err)
+		return err
 	}
+	return nil
 }
 
-func (s *Spider) danmukuKeeplive() {
+func (s *Spider) danmukuKeeplive() error {
 	msg := fmt.Sprintf("type@=keeplive/tick@=%d/", time.Now().Unix())
 	if err := s.sendMsg(msg); err != nil {
-		log.Println(err)
+		return err
 	}
+	return nil
 }
 
 func (s *Spider) readMessage() (string, error) {
@@ -161,42 +206,46 @@ func (s *Spider) readMessage() (string, error) {
 	return string(messageData), nil
 }
 
-func (s *Spider) danmukuReadAndPipe() {
+func (s *Spider) danmukuReadAndPipe() (map[string]string, error) {
 	msgStr, err := s.readMessage()
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
 	message := parseMessage(msgStr)
-	s.msgChan <- message
+	return message, nil
 }
 
 func (s *Spider) GetMessageChan() chan map[string]string {
 	return s.msgChan
 }
 
+func (s *Spider) GetStatus() SpiderStatus {
+	return s.status
+}
+
+func (s *Spider) GetLastError() error {
+	return s.lastError
+}
+
 func (s *Spider) GetGiftMap() map[string]string {
 	if s.giftMap == nil {
-		resp, err := http.Get(fmt.Sprintf(roomInfoUrl, s.roomId))
+		resp, err := s.httpClient.Get(fmt.Sprintf(roomInfoUrl, s.roomId))
 		if err != nil {
-			log.Println(err)
 			return make(map[string]string)
 		}
 		defer resp.Body.Close()
 
 		data, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			log.Println(err)
 			return make(map[string]string)
 		}
 
 		var giftData giftData
 		if err := json.Unmarshal(data, &giftData); err != nil {
-			log.Println(err)
 			return make(map[string]string)
 		}
 
 		if giftData.Error != 0 {
-			log.Printf("giftData.error = %d\n", giftData.Error)
 			return make(map[string]string)
 		}
 
@@ -208,4 +257,17 @@ func (s *Spider) GetGiftMap() map[string]string {
 	}
 
 	return s.giftMap
+}
+
+var msgRegex = regexp.MustCompile(`(.*?)@=(.*?)/`)
+
+func parseMessage(message string) map[string]string {
+	msg := make(map[string]string)
+
+	submatchs := msgRegex.FindAllStringSubmatch(message, -1)
+
+	for _, submatch := range submatchs {
+		msg[submatch[1]] = submatch[2]
+	}
+	return msg
 }
