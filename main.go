@@ -2,7 +2,7 @@ package main
 
 import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	_ "gopkg.in/redis.v5"
+	_ "github.com/zwh8800/66ana/service"
 )
 
 func main() {

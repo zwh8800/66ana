@@ -1,2 +1,8 @@
 package: github.com/zwh8800/66ana
-import: []
+import:
+- package: github.com/BurntSushi/toml
+  version: ^0.2.0
+- package: github.com/jinzhu/gorm
+  version: ^1.0.0
+- package: gopkg.in/redis.v5
+  version: ^5.2.2
