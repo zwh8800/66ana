@@ -19,6 +19,33 @@ func Run() {
 			service.PublishStartSpider(payload.WorkerId, &service.StartSpiderPayload{
 				RoomId: 67373,
 			})
+			service.PublishStartSpider(payload.WorkerId, &service.StartSpiderPayload{
+				RoomId: 613093,
+			})
+			service.PublishStartSpider(payload.WorkerId, &service.StartSpiderPayload{
+				RoomId: 606171,
+			})
+			service.PublishStartSpider(payload.WorkerId, &service.StartSpiderPayload{
+				RoomId: 10,
+			})
+			service.PublishStartSpider(payload.WorkerId, &service.StartSpiderPayload{
+				RoomId: 138286,
+			})
+			service.PublishStartSpider(payload.WorkerId, &service.StartSpiderPayload{
+				RoomId: 96291,
+			})
+			service.PublishStartSpider(payload.WorkerId, &service.StartSpiderPayload{
+				RoomId: 58428,
+			})
+			service.PublishStartSpider(payload.WorkerId, &service.StartSpiderPayload{
+				RoomId: 522423,
+			})
+			service.PublishStartSpider(payload.WorkerId, &service.StartSpiderPayload{
+				RoomId: 229346,
+			})
+			service.PublishStartSpider(payload.WorkerId, &service.StartSpiderPayload{
+				RoomId: 573449,
+			})
 
 			started = true
 		}
