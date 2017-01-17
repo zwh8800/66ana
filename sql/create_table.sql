@@ -9,17 +9,11 @@ CREATE TABLE dy_user (
   deserve_level INTEGER,
   deserve_count INTEGER,
   bdeserve_level INTEGER,
-  create_time TIMESTAMPTZ,
-  last_update TIMESTAMPTZ,
   first_appeared_room_id INTEGER,
-  last_appeared_room_id INTEGER
-);
-
-CREATE TABLE dy_user_room (
-  id SERIAL,
-  user_id INTEGER,
-  room_id INTEGER,
-  room_privilege INTEGER
+  last_appeared_room_id INTEGER,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  deleted_at TIMESTAMPTZ
 );
 
 CREATE TABLE dy_room (
@@ -30,11 +24,23 @@ CREATE TABLE dy_room (
   status INTEGER,
   thumb VARCHAR(255),
   avatar VARCHAR(255),
-  fans INTEGER,
+  fans_count INTEGER,
   owner_name VARCHAR(120),
+  weight INTEGER,
   last_live_time TIMESTAMPTZ,
-  create_time TIMESTAMPTZ,
-  last_update TIMESTAMPTZ
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  deleted_at TIMESTAMPTZ
+);
+
+CREATE TABLE dy_user_room (
+  id SERIAL,
+  user_id INTEGER,
+  room_id INTEGER,
+  room_privilege INTEGER,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  deleted_at TIMESTAMPTZ
 );
 
 CREATE TABLE dy_cate (
@@ -45,24 +51,26 @@ CREATE TABLE dy_cate (
   game_url VARCHAR(120),
   game_src VARCHAR(255),
   game_icon VARCHAR(255),
-  create_time TIMESTAMPTZ,
-  last_update TIMESTAMPTZ
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  deleted_at TIMESTAMPTZ
 );
 
-CREATE TABLE dy_gift_type (
+CREATE TABLE dy_gift (
   id SERIAL,
   room_id INTEGER,
   gid INTEGER,
   name VARCHAR(120),
-  type INTEGER,
+  gift_type INTEGER,
   price DECIMAL(7, 2),
   contribution INTEGER,
   intro VARCHAR(120),
-  "desc" VARCHAR(120),
+  description VARCHAR(120),
   himg VARCHAR(255),
   mimg VARCHAR(255),
-  create_time TIMESTAMPTZ,
-  last_update TIMESTAMPTZ
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  deleted_at TIMESTAMPTZ
 );
 
 CREATE TABLE dy_danmu (
@@ -73,18 +81,22 @@ CREATE TABLE dy_danmu (
   content VARCHAR(255),
   color INTEGER,
   client INTEGER,
-  create_time TIMESTAMPTZ
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  deleted_at TIMESTAMPTZ
 );
 
-CREATE TABLE dy_gift (
+CREATE TABLE dy_gift_history (
   id BIGSERIAL,
   user_id INTEGER,
   room_id INTEGER,
-  gift_type_id INTEGER,
+  gift_id INTEGER,
   count INTEGER,
   hits INTEGER,
   gift_style VARCHAR(255),
-  create_time TIMESTAMPTZ
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  deleted_at TIMESTAMPTZ
 );
 
 CREATE TABLE dy_deserve (
@@ -94,14 +106,18 @@ CREATE TABLE dy_deserve (
   level INTEGER,
   count INTEGER,
   hits INTEGER,
-  create_time TIMESTAMPTZ
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  deleted_at TIMESTAMPTZ
 );
 
 CREATE TABLE dy_user_enter (
   id BIGSERIAL,
   user_id INTEGER,
   room_id INTEGER,
-  create_time TIMESTAMPTZ
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  deleted_at TIMESTAMPTZ
 );
 
 CREATE TABLE dy_super_danmu (
@@ -110,5 +126,7 @@ CREATE TABLE dy_super_danmu (
   room_id INTEGER,
   jump_room_id INTEGER,
   content VARCHAR(255),
-  create_time TIMESTAMPTZ
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  deleted_at TIMESTAMPTZ
 );

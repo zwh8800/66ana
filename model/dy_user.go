@@ -1,11 +1,12 @@
 package model
 
-import "time"
+import "github.com/jinzhu/gorm"
 
 const DyUserTableName = "dy_user"
 
 type DyUser struct {
-	Id                  int64       `db:"id" json:"id"`
+	gorm.Model
+
 	Uid                 int64       `db:"uid" json:"uid"`
 	Nickname            string      `db:"nickname" json:"nickname"`
 	Level               int         `db:"level" json:"level"`
@@ -15,8 +16,10 @@ type DyUser struct {
 	DeserveLevel        int         `db:"deserve_level" json:"deserve_level"`
 	DeserveCount        int         `db:"deserve_count" json:"deserve_count"`
 	BdeserveLevel       int         `db:"bdeserve_level" json:"bdeserve_level"`
-	CreateTime          time.Time   `db:"create_time" json:"create_time"`
-	last_update         time.Time   `db:"last_update" json:"last_update"`
 	FirstAppearedRoomId int64       `db:"first_appeared_room_id" json:"first_appeared_room_id"`
 	LastAppearedRoomId  int64       `db:"last_appeared_room_id" json:"last_appeared_room_id"`
+}
+
+func (*DyUser) TableName() string {
+	return DyUserTableName
 }
