@@ -227,6 +227,10 @@ func (s *Spider) GetLastError() error {
 	return s.lastError
 }
 
+func (s *Spider) Close() {
+
+}
+
 func (s *Spider) GetGiftMap() map[string]string {
 	if s.giftMap == nil {
 		resp, err := s.httpClient.Get(fmt.Sprintf(roomInfoUrl, s.roomId))

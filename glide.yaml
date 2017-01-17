@@ -6,3 +6,6 @@ import:
   version: ^1.0.0
 - package: gopkg.in/redis.v5
   version: ^5.2.2
+- package: golang.org/x/net
+- package: github.com/satori/go.uuid
+  version: ^1.1.0

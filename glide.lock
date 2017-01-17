@@ -1,5 +1,5 @@
-hash: 2fd8b931ec49ae387bd267674ac5b8e993205744182a459d43eacb933222d2a4
-updated: 2017-01-17T15:55:55.891652093+08:00
+hash: a1f1161aa64e998c11fd20813d3e6ef3782b97271c53912b11e59cf830584180
+updated: 2017-01-17T22:27:27.24348277+08:00
 imports:
 - name: github.com/BurntSushi/toml
   version: bbd5bb678321a0d6e58f1099321dfa73391c1b6f
@@ -14,6 +14,12 @@ imports:
   subpackages:
   - hstore
   - oid
+- name: github.com/satori/go.uuid
+  version: 879c5887cd475cd7864858769793b2ceb0d44feb
+- name: golang.org/x/net
+  version: f2499483f923065a842d38eb4c7f1927e6fc6e6d
+  subpackages:
+  - proxy
 - name: gopkg.in/redis.v5
   version: 8829ddcd8bdb333e477cc845946c4b9b2ef66280
   subpackages:

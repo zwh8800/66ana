@@ -18,6 +18,15 @@ type config struct {
 		Password string
 		DB       int
 	}
+
+	Supervisor struct {
+		IsSupervisor bool
+	}
+
+	SpiderWorker struct {
+		IsSpiderWorker bool
+		Capacity       int
+	}
 }
 
 var Conf config
