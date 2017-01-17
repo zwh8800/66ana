@@ -18,9 +18,7 @@ type ReportPayload struct {
 	MemUsage int64
 }
 
-type reportHandler func(*ReportPayload, error)
-
-func SubscribeReport(h reportHandler) error {
+func SubscribeReport(h func(*ReportPayload, error)) error {
 	return subscribe(constants.EventReport, func() interface{} { return &ReportPayload{} },
 		func(payload interface{}, err error) {
 			report, _ := payload.(*ReportPayload)
@@ -36,9 +34,7 @@ type StartSpiderPayload struct {
 	RoomId int64
 }
 
-type startSpiderHandler func(*StartSpiderPayload, error)
-
-func SubscribeStartSpider(workerId string, h startSpiderHandler) error {
+func SubscribeStartSpider(workerId string, h func(*StartSpiderPayload, error)) error {
 	return subscribe(constants.EventStartSpider+":"+workerId, func() interface{} { return &StartSpiderPayload{} },
 		func(payload interface{}, err error) {
 			report, _ := payload.(*StartSpiderPayload)
@@ -57,9 +53,7 @@ type SpiderClosedPayload struct {
 	ReportPayload
 }
 
-type spiderClosedHandler func(*SpiderClosedPayload, error)
-
-func SubscribeSpiderClosed(h spiderClosedHandler) error {
+func SubscribeSpiderClosed(h func(*SpiderClosedPayload, error)) error {
 	return subscribe(constants.EventSpiderClosed, func() interface{} { return &SpiderClosedPayload{} },
 		func(payload interface{}, err error) {
 			report, _ := payload.(*SpiderClosedPayload)

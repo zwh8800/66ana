@@ -1,6 +1,7 @@
 package spiderworker
 
 import (
+	"log"
 	"math/rand"
 	"sync"
 	"time"
@@ -13,32 +14,57 @@ import (
 
 var (
 	workerId   string
-	workers    map[string]*worker
+	workers    map[int64]*worker
 	workerLock sync.RWMutex
+	closeChan  chan int64
 )
 
 func init() {
 	workerId = uuid.NewV4().String()
-	workers = make(map[string]*worker, conf.Conf.SpiderWorker.Capacity)
+	workers = make(map[int64]*worker, conf.Conf.SpiderWorker.Capacity)
+	closeChan = make(chan int64, conf.Conf.SpiderWorker.Capacity/10)
 }
 
 func Run() {
-	service.SubscribeStartSpider(workerId, func(payload *service.StartSpiderPayload) {
-
+	service.SubscribeStartSpider(workerId, func(payload *service.StartSpiderPayload, err error) {
+		if err != nil {
+			log.Println("SubscribeStartSpider:", err)
+			return
+		}
+		newJob(payload.RoomId)
 	})
 
 	go report()
+	go checkClosed()
+}
+
+func newJob(roomId int64) {
+	workerLock.Lock()
+	defer workerLock.Unlock()
+	worker := newWorker(roomId, closeChan)
+	workers[roomId] = worker
 }
 
 func report() {
 	for {
 		service.PublishReport(generateReport())
-		time.Sleep(10*time.Second + rand.Intn(4) - 2) // +/- 2s
+		time.Sleep(time.Duration(10+rand.Intn(4)-2) * time.Second) // +/- 2s
 	}
 }
 
-func getWorkingRoomIdList() []string {
-	list := make([]string, 0, len(workers))
+func checkClosed() {
+	for {
+		roomId := <-closeChan
+		service.PublishSpiderClosed(&service.SpiderClosedPayload{
+			WorkerId:      workerId,
+			RoomId:        roomId,
+			ReportPayload: *generateReport(),
+		})
+	}
+}
+
+func getWorkingRoomIdList() []int64 {
+	list := make([]int64, 0, len(workers))
 	workerLock.RLock()
 	defer workerLock.RUnlock()
 	for _, worker := range workers {

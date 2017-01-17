@@ -46,7 +46,7 @@ const (
 )
 
 type Spider struct {
-	roomId     int
+	roomId     int64
 	giftMap    map[string]string
 	conn       net.Conn
 	msgChan    chan map[string]string
@@ -55,7 +55,7 @@ type Spider struct {
 	httpClient *http.Client
 }
 
-func NewSpider(roomId int, dialer proxy.Dialer) (*Spider, error) {
+func NewSpider(roomId int64, dialer proxy.Dialer) (*Spider, error) {
 	s := &Spider{
 		roomId:  roomId,
 		msgChan: make(chan map[string]string, 256),
@@ -67,7 +67,7 @@ func NewSpider(roomId int, dialer proxy.Dialer) (*Spider, error) {
 		conn, err = dialer.Dial("tcp", openDouyuAddr)
 		s.httpClient = &http.Client{
 			Transport: &http.Transport{
-				Dial: dialer,
+				Dial: dialer.Dial,
 			},
 		}
 	} else {
@@ -228,7 +228,7 @@ func (s *Spider) GetLastError() error {
 }
 
 func (s *Spider) Close() {
-
+	//TODO: not implemented yet
 }
 
 func (s *Spider) GetGiftMap() map[string]string {

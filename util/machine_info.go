@@ -14,5 +14,5 @@ func CpuCount() int {
 func MemUsage() int64 {
 	m := runtime.MemStats{}
 	runtime.ReadMemStats(&m)
-	return m.Alloc
+	return int64(m.Alloc)
 }
