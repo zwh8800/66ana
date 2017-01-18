@@ -4,7 +4,7 @@ CREATE TABLE dy_user (
   nickname VARCHAR(120),
   level INTEGER,
   strength INTEGER,
-  gift INTEGER,
+  gift_rank INTEGER,
   platform_privilege INTEGER,
   deserve_level INTEGER,
   deserve_count INTEGER,
@@ -75,7 +75,7 @@ CREATE TABLE dy_gift (
 
 CREATE TABLE dy_danmu (
   id BIGSERIAL,
-  cid INTEGER,
+  cid VARCHAR(255),
   user_id INTEGER,
   room_id INTEGER,
   content VARCHAR(255),

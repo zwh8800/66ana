@@ -11,7 +11,7 @@ type DyUser struct {
 	Nickname            string      `db:"nickname" json:"nickname"`
 	Level               int         `db:"level" json:"level"`
 	Strength            int         `db:"strength" json:"strength"`
-	Gift                int         `db:"gift" json:"gift"`
+	GiftRank            int         `db:"gift_rank" json:"gift_rank"`
 	PlatformPrivilege   DyPrivilege `db:"platform_privilege" json:"platform_privilege"`
 	DeserveLevel        int         `db:"deserve_level" json:"deserve_level"`
 	DeserveCount        int         `db:"deserve_count" json:"deserve_count"`

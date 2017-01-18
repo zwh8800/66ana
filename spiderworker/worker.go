@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/zwh8800/66ana/service"
 	"github.com/zwh8800/66ana/spider"
 )
 
@@ -46,6 +47,21 @@ func (w *worker) run() {
 }
 
 func (w *worker) handleMessage(message map[string]string) {
+	w.logMessage(message)
+	switch message["type"] {
+	case "chatmsg":
+		danmu, err := service.InsertDyDanmu(message)
+		if err != nil {
+			log.Println("service.InsertDyDanmu:", err)
+		}
+
+		log.Println(danmu, "inserted")
+	case "dgb":
+	default:
+	}
+}
+
+func (w *worker) logMessage(message map[string]string) {
 	switch message["type"] {
 	case "chatmsg":
 		colorCode := ""

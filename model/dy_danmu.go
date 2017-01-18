@@ -7,7 +7,7 @@ const DyDanmuTableName = "dy_danmu"
 type DyDanmu struct {
 	gorm.Model
 
-	Cid     int64
+	Cid     string
 	UserId  int64
 	RoomId  int64
 	Content string
