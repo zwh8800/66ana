@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"regexp"
@@ -212,7 +211,6 @@ func (s *Spider) danmukuReadAndPipe() (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println(msgStr)
 	message := parseMessage(msgStr)
 	return message, nil
 }

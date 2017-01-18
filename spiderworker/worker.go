@@ -47,15 +47,13 @@ func (w *worker) run() {
 }
 
 func (w *worker) handleMessage(message map[string]string) {
-	w.logMessage(message)
 	switch message["type"] {
 	case "chatmsg":
-		danmu, err := service.InsertDyDanmu(message)
+		_, err := service.InsertDyDanmu(message)
 		if err != nil {
 			log.Println("service.InsertDyDanmu:", err)
 		}
 
-		log.Println(danmu, "inserted")
 	case "dgb":
 	default:
 	}
