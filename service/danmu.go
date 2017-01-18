@@ -1,7 +1,6 @@
 package service
 
 import (
-	"log"
 	"strconv"
 
 	"github.com/zwh8800/66ana/model"
@@ -20,7 +19,7 @@ func InsertDyDanmu(message map[string]string) (*model.DyDanmu, error) {
 		return nil, err
 	}
 
-	tx.Where(room).FirstOrCreate(room)
+	tx.Set("gorm:query_option", "FOR UPDATE").Where(room).FirstOrCreate(room)
 
 	user.FirstAppearedRoomId = int64(room.ID)
 	user.LastAppearedRoomId = int64(room.ID)
@@ -30,8 +29,11 @@ func InsertDyDanmu(message map[string]string) (*model.DyDanmu, error) {
 	tx.Set("gorm:query_option", "FOR UPDATE").
 		Where(model.DyUser{Uid: user.Uid}).
 		Attrs(user).
-		Assign(assignUser).
 		FirstOrCreate(user)
+	if !user.Equals(&assignUser) {
+		tx.Model(user).Omit("first_appeared_room_id").
+			Update(assignUser)
+	}
 
 	danmu.RoomId = int64(room.ID)
 	danmu.UserId = int64(user.ID)
@@ -56,31 +58,15 @@ func cookModelFromDanmu(message map[string]string) (*model.DyRoom, *model.DyUser
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	level, err := strconv.ParseInt(message["level"], 10, 64)
-	if err != nil {
-		log.Println("giftRank:", level)
-	}
-	giftRank, err := strconv.ParseInt(message["gt"], 10, 64)
-	if err != nil {
-		log.Println("giftRank:", err)
-	}
+	level, _ := strconv.ParseInt(message["level"], 10, 64)
+	giftRank, _ := strconv.ParseInt(message["gt"], 10, 64)
 	pg, err := strconv.ParseInt(message["pg"], 10, 64)
 	if err != nil {
 		pg = 1
-		log.Println("PlatformPrivilege:", err)
 	}
-	dlv, err := strconv.ParseInt(message["dlv"], 10, 64)
-	if err != nil {
-		log.Println("DeserveLevel:", err)
-	}
-	dc, err := strconv.ParseInt(message["dc"], 10, 64)
-	if err != nil {
-		log.Println("DeserveCount:", err)
-	}
-	bdlv, err := strconv.ParseInt(message["bdlv"], 10, 64)
-	if err != nil {
-		log.Println("BdeserveLevel:", err)
-	}
+	dlv, _ := strconv.ParseInt(message["dlv"], 10, 64)
+	dc, _ := strconv.ParseInt(message["dc"], 10, 64)
+	bdlv, _ := strconv.ParseInt(message["bdlv"], 10, 64)
 	user := &model.DyUser{
 		Uid:               uid,
 		Nickname:          message["nn"],
@@ -92,14 +78,8 @@ func cookModelFromDanmu(message map[string]string) (*model.DyRoom, *model.DyUser
 		BdeserveLevel:     int(bdlv),
 	}
 
-	color, err := strconv.ParseInt(message["color"], 10, 64)
-	if err != nil {
-		log.Println("color:", err)
-	}
-	client, err := strconv.ParseInt(message["client"], 10, 64)
-	if err != nil {
-		log.Println("client:", err)
-	}
+	color, _ := strconv.ParseInt(message["col"], 10, 64)
+	client, _ := strconv.ParseInt(message["ct"], 10, 64)
 	danmu := &model.DyDanmu{
 		Cid:     message["cid"],
 		Color:   model.DyDanmuColor(color),

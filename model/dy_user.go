@@ -23,3 +23,13 @@ type DyUser struct {
 func (*DyUser) TableName() string {
 	return DyUserTableName
 }
+
+func (a *DyUser) Equals(b *DyUser) bool {
+	return a.Uid == b.Uid &&
+		a.Nickname == b.Nickname &&
+		a.Level == b.Level &&
+		a.Strength == b.Strength &&
+		a.GiftRank == b.GiftRank &&
+		a.PlatformPrivilege == b.PlatformPrivilege &&
+		a.LastAppearedRoomId == b.LastAppearedRoomId
+}
