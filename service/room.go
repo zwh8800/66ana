@@ -87,7 +87,7 @@ func cookModelFromRoomInfo(roomInfo *model.RoomInfo) (*model.DyCate, *model.DyRo
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	lastLiveTime, err := time.Parse("2006-01-02 15:04", roomInfo.StartTime)
+	lastLiveTime, err := time.ParseInLocation("2006-01-02 15:04", roomInfo.StartTime, time.Local)
 	if err != nil {
 		return nil, nil, nil, err
 	}
