@@ -24,12 +24,10 @@ func (*DyUser) TableName() string {
 	return DyUserTableName
 }
 
-func (a *DyUser) Equals(b *DyUser) bool {
-	return a.Uid == b.Uid &&
-		a.Nickname == b.Nickname &&
-		a.Level == b.Level &&
-		a.Strength == b.Strength &&
-		a.GiftRank == b.GiftRank &&
-		a.PlatformPrivilege == b.PlatformPrivilege &&
-		a.LastAppearedRoomId == b.LastAppearedRoomId
+func (a DyUser) Equals(b DyUser) bool {
+	// omit some field
+	a.Model = b.Model
+	a.FirstAppearedRoomId = b.FirstAppearedRoomId
+
+	return a == b
 }

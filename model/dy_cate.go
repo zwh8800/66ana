@@ -18,3 +18,10 @@ type DyCate struct {
 func (*DyCate) TableName() string {
 	return DyCateTableName
 }
+
+func (a DyCate) Equals(b DyCate) bool {
+	// omit some field
+	a.Model = b.Model
+
+	return a == b
+}

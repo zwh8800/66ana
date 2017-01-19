@@ -14,29 +14,28 @@ func InsertDyDanmu(message map[string]string) (*model.DyDanmu, error) {
 			tx.Rollback()
 		}
 	}()
+
 	room, user, danmu, err := cookModelFromDanmu(message)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := tx.Set("gorm:query_option", "FOR UPDATE").
-		Where(room).FirstOrCreate(room).Error; err != nil {
+	if err := tx.Where(room).FirstOrCreate(room).Error; err != nil {
 		return nil, err
 	}
 
 	user.FirstAppearedRoomId = int64(room.ID)
 	user.LastAppearedRoomId = int64(room.ID)
-	assignUser := *user
-	assignUser.FirstAppearedRoomId = 0
-
+	updatedUser := *user
+	updatedUser.FirstAppearedRoomId = 0
 	if err := tx.Set("gorm:query_option", "FOR UPDATE").
 		Where(model.DyUser{Uid: user.Uid}).
 		Attrs(user).FirstOrCreate(user).Error; err != nil {
 		return nil, err
 	}
-	if !user.Equals(&assignUser) {
-		if err := tx.Model(user).Omit("first_appeared_room_id").
-			Update(assignUser).Error; err != nil {
+	if !user.Equals(updatedUser) {
+		if err := tx.Model(user).Update(updatedUser).
+			Error; err != nil {
 			return nil, err
 		}
 	}
@@ -47,7 +46,9 @@ func InsertDyDanmu(message map[string]string) (*model.DyDanmu, error) {
 		return nil, err
 	}
 
-	tx.Commit()
+	if err := tx.Commit().Error; err != nil {
+		return nil, err
+	}
 	committed = true
 	return danmu, nil
 }

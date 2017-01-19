@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/zwh8800/66ana/model"
 	"golang.org/x/net/proxy"
 )
 
@@ -19,23 +20,6 @@ const (
 	msgTypeSend   uint16 = 689
 	msgTypeRecv   uint16 = 690
 )
-
-type giftData struct {
-	Data struct {
-		Gift []struct {
-			Desc  string  `json:"desc"`
-			Gx    float64 `json:"gx"`
-			Himg  string  `json:"himg"`
-			ID    string  `json:"id"`
-			Intro string  `json:"intro"`
-			Mimg  string  `json:"mimg"`
-			Name  string  `json:"name"`
-			Pc    float64 `json:"pc"`
-			Type  string  `json:"type"`
-		} `json:"gift"`
-	} `json:"data"`
-	Error int `json:"error"`
-}
 
 type SpiderStatus int
 
@@ -47,7 +31,6 @@ const (
 
 type Spider struct {
 	roomId     int64
-	giftMap    map[string]string
 	conn       net.Conn
 	msgChan    chan map[string]string
 	status     SpiderStatus
@@ -231,36 +214,37 @@ func (s *Spider) Close() {
 	//TODO: not implemented yet
 }
 
-func (s *Spider) GetGiftMap() map[string]string {
-	if s.giftMap == nil {
-		resp, err := s.httpClient.Get(fmt.Sprintf(roomInfoUrl, s.roomId))
-		if err != nil {
-			return make(map[string]string)
-		}
-		defer resp.Body.Close()
+func (s *Spider) GetRoomInfo() (*model.RoomInfo, error) {
+	resp, err := s.httpClient.Get(fmt.Sprintf(roomInfoUrl, s.roomId))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
 
-		data, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return make(map[string]string)
-		}
-
-		var giftData giftData
-		if err := json.Unmarshal(data, &giftData); err != nil {
-			return make(map[string]string)
-		}
-
-		if giftData.Error != 0 {
-			return make(map[string]string)
-		}
-
-		s.giftMap = make(map[string]string, len(giftData.Data.Gift))
-
-		for _, gift := range giftData.Data.Gift {
-			s.giftMap[gift.ID] = gift.Name
-		}
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
 	}
 
-	return s.giftMap
+	var roomInfoJson model.RoomInfoJson
+	if err := json.Unmarshal(data, &roomInfoJson); err != nil {
+		return nil, err
+	}
+
+	if roomInfoJson.Error != 0 {
+		var errMsg string
+		if err := json.Unmarshal(roomInfoJson.Data, &errMsg); err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("roomInfo Error: %s", errMsg)
+	}
+
+	var roomInfo model.RoomInfo
+	if err := json.Unmarshal(roomInfoJson.Data, &roomInfo); err != nil {
+		return nil, err
+	}
+
+	return &roomInfo, nil
 }
 
 var msgRegex = regexp.MustCompile(`(.*?)@=(.*?)/`)

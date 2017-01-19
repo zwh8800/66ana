@@ -2,23 +2,30 @@ package model
 
 import "github.com/jinzhu/gorm"
 
-const DyGiftTypeTableName = "dy_gift_type"
+const DyGiftTableName = "dy_gift"
 
 type DyGift struct {
 	gorm.Model
 
 	RoomId       int64
 	Gid          int64
-	name         string
+	Name         string
 	GiftType     DyGiftType
 	Price        float64
-	contribution int
-	intro        string
-	description  string
-	himg         string
-	mimg         string
+	Contribution int
+	Intro        string
+	Description  string
+	Himg         string
+	Mimg         string
 }
 
 func (*DyGift) TableName() string {
-	return DyGiftTypeTableName
+	return DyGiftTableName
+}
+
+func (a DyGift) Equals(b DyGift) bool {
+	// omit some field
+	a.Model = b.Model
+
+	return a == b
 }

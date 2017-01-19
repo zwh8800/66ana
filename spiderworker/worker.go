@@ -34,6 +34,8 @@ func newWorker(roomId int64, closeChan chan int64) *worker {
 }
 
 func (w *worker) run() {
+	w.pullRoomInfo()
+
 	ticker := time.Tick(10 * time.Second)
 	for {
 		select {
@@ -59,40 +61,17 @@ func (w *worker) handleMessage(message map[string]string) {
 	}
 }
 
-func (w *worker) logMessage(message map[string]string) {
-	switch message["type"] {
-	case "chatmsg":
-		colorCode := ""
-		switch message["col"] {
-		case "1": // 红
-			colorCode = "\033[1;91m"
-		case "2": // 蓝
-			colorCode = "\033[1;94m"
-		case "3": // 绿
-			colorCode = "\033[1;92m"
-		case "4": // 黄
-			colorCode = "\033[1;93m"
-		case "5": // 紫
-			colorCode = "\033[1;38;5;129m"
-		case "6": // 粉
-			colorCode = "\033[1;38;5;213m"
-		default:
-			colorCode = "\033[1m"
-		}
-		log.Printf("%s(%s): %s%s\033[0m", message["nn"], message["uid"], colorCode, message["txt"])
-	case "dgb":
-		hits := message["hits"]
-		if hits == "" {
-			hits = "1"
-		}
-		log.Printf("%s(%s) \033[90m送出 %s (%s 连击)\033[0m", message["nn"], message["uid"], w.spider.GetGiftMap()[message["gfid"]], hits)
-	default:
-		// log.Printf("%#v", message)
-	}
-}
-
 func (w *worker) pullRoomInfo() {
 	// TODO: 拉取房间状态
+	roomInfo, err := w.spider.GetRoomInfo()
+	if err != nil {
+		log.Println("spider.GetRoomInfo:", err)
+		return
+	}
+	if _, err := service.InsertDyRoom(roomInfo); err != nil {
+		log.Println("service.InsertDyRoom:", err)
+		return
+	}
 }
 
 func (w *worker) GetRoomId() int64 {

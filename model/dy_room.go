@@ -18,6 +18,7 @@ type DyRoom struct {
 	Thumb        string
 	Avatar       string
 	FansCount    int
+	OnlineCount  int
 	OwnerName    string
 	Weight       int
 	LastLiveTime time.Time
@@ -25,4 +26,11 @@ type DyRoom struct {
 
 func (*DyRoom) TableName() string {
 	return DyRoomTableName
+}
+
+func (a DyRoom) Equals(b DyRoom) bool {
+	// omit some field
+	a.Model = b.Model
+
+	return a == b
 }
