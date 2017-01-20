@@ -25,7 +25,7 @@ func (l *LoopTask) Close() {
 	} else {
 		select {
 		case l.c <- true:
-		case time.After(l.timeout):
+		case <-time.After(l.timeout):
 		}
 	}
 	close(l.c)
