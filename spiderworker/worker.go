@@ -5,8 +5,10 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/zwh8800/66ana/model"
 	"github.com/zwh8800/66ana/service"
 	"github.com/zwh8800/66ana/spider"
+	"github.com/zwh8800/66ana/util"
 	"golang.org/x/net/proxy"
 )
 
@@ -19,6 +21,8 @@ type worker struct {
 	closeChan chan int64
 	closed    chan bool
 	spider    *spider.Spider
+
+	speeder *util.Speedometer
 }
 
 func newWorker(roomId int64, closeChan chan int64) *worker {
@@ -26,6 +30,8 @@ func newWorker(roomId int64, closeChan chan int64) *worker {
 		roomId:    roomId,
 		closeChan: closeChan,
 		closed:    make(chan bool),
+
+		speeder: util.NewSpeedometer(),
 	}
 	var err error
 
@@ -89,6 +95,7 @@ func (w *worker) checkSpiderStatus() {
 }
 
 func (w *worker) handleMessage(message map[string]string) {
+	needIncreaseCounter := true
 	switch message["type"] {
 	case "chatmsg":
 		_, err := service.InsertDyDanmu(message)
@@ -98,6 +105,10 @@ func (w *worker) handleMessage(message map[string]string) {
 
 	case "dgb":
 	default:
+		needIncreaseCounter = false
+	}
+	if needIncreaseCounter {
+		w.speeder.Add()
 	}
 }
 
@@ -124,6 +135,9 @@ func (w *worker) close() {
 	w.closeChan <- w.roomId
 }
 
-func (w *worker) GetRoomId() int64 {
-	return w.roomId
+func (w *worker) GetWorkerInfo() *model.WorkerInfo {
+	return &model.WorkerInfo{
+		RoomId: w.roomId,
+		Speed:  w.speeder.GetSpeed(),
+	}
 }

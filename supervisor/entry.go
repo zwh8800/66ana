@@ -21,7 +21,7 @@ func Run() {
 		}
 	}
 
-	service.SubscribeReport(func(payload *service.ReportPayload, err error) {
+	service.SubscribeReport(func(payload *model.ReportPayload, err error) {
 		log.Println("Report:", util.JsonStringify(payload, false), "err:", err)
 		if err != nil {
 			return
@@ -29,7 +29,7 @@ func Run() {
 		dispatchTask(payload)
 	})
 
-	service.SubscribeSpiderClosed(func(payload *service.SpiderClosedPayload, err error) {
+	service.SubscribeSpiderClosed(func(payload *model.SpiderClosedPayload, err error) {
 		log.Println("SubscribeSpiderClosed:", util.JsonStringify(payload, false), "err:", err)
 		if err != nil {
 			return
@@ -38,10 +38,13 @@ func Run() {
 	})
 }
 
-func dispatchTask(report *service.ReportPayload) {
-	set := make(map[int64]bool, len(report.RoomIdList))
-	for _, roomId := range report.RoomIdList {
-		set[roomId] = true
+func dispatchTask(report *model.ReportPayload) {
+	roomIdList := make([]int64, len(report.Workers))
+	set := make(map[int64]bool, len(report.Workers))
+
+	for _, room := range report.Workers {
+		roomIdList = append(roomIdList, room.RoomId)
+		set[room.RoomId] = true
 	}
 
 	if report.Working < report.Capacity {
@@ -65,7 +68,7 @@ func dispatchTask(report *service.ReportPayload) {
 		}
 
 		for _, roomId := range toStartList {
-			if err := service.PublishStartSpider(report.WorkerId, &service.StartSpiderPayload{
+			if err := service.PublishStartSpider(report.WorkerId, &model.StartSpiderPayload{
 				RoomId: roomId,
 			}); err != nil {
 				log.Println("service.InsertDyCate:", err)

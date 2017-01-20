@@ -8,6 +8,7 @@ import (
 
 	"github.com/satori/go.uuid"
 	"github.com/zwh8800/66ana/conf"
+	"github.com/zwh8800/66ana/model"
 	"github.com/zwh8800/66ana/service"
 	"github.com/zwh8800/66ana/util"
 )
@@ -26,7 +27,7 @@ func init() {
 }
 
 func Run() {
-	service.SubscribeStartSpider(workerId, func(payload *service.StartSpiderPayload, err error) {
+	service.SubscribeStartSpider(workerId, func(payload *model.StartSpiderPayload, err error) {
 		if err != nil {
 			log.Println("SubscribeStartSpider:", err)
 			return
@@ -64,7 +65,7 @@ func checkClosed() {
 			delete(workers, roomId)
 		}()
 
-		service.PublishSpiderClosed(&service.SpiderClosedPayload{
+		service.PublishSpiderClosed(&model.SpiderClosedPayload{
 			WorkerId:      workerId,
 			RoomId:        roomId,
 			ReportPayload: generateReport(),
@@ -72,23 +73,23 @@ func checkClosed() {
 	}
 }
 
-func getWorkingRoomIdList() []int64 {
-	list := make([]int64, 0, len(workers))
+func getWorkerInfoList() []*model.WorkerInfo {
+	list := make([]*model.WorkerInfo, 0, len(workers))
 	workerLock.RLock()
 	defer workerLock.RUnlock()
 	for _, worker := range workers {
-		list = append(list, worker.GetRoomId())
+		list = append(list, worker.GetWorkerInfo())
 	}
 	return list
 }
 
-func generateReport() *service.ReportPayload {
-	return &service.ReportPayload{
+func generateReport() *model.ReportPayload {
+	return &model.ReportPayload{
 		WorkerId: workerId,
 		Capacity: conf.Conf.SpiderWorker.Capacity,
 		Working:  len(workers),
 
-		RoomIdList: getWorkingRoomIdList(),
+		Workers: getWorkerInfoList(),
 
 		CpuCount: util.CpuCount(),
 		MemUsage: util.MemUsage(),
