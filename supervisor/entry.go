@@ -26,40 +26,52 @@ func Run() {
 		if err != nil {
 			return
 		}
-		set := make(map[int64]bool, len(payload.RoomIdList))
-		for _, roomId := range payload.RoomIdList {
-			set[roomId] = true
-		}
-
-		if payload.Working < payload.Capacity {
-			n := payload.Capacity - payload.Working
-			toStartList := make([]int64, 0, n)
-
-		out:
-			for i := 0; n > 0; i++ {
-				list := getLiveList(i)
-				for _, roomId := range list {
-					if set[roomId] {
-						continue
-					}
-					toStartList = append(toStartList, roomId)
-
-					n--
-					if n <= 0 {
-						break out
-					}
-				}
-			}
-
-			for _, roomId := range toStartList {
-				if err := service.PublishStartSpider(payload.WorkerId, &service.StartSpiderPayload{
-					RoomId: roomId,
-				}); err != nil {
-					log.Println("service.InsertDyCate:", err)
-				}
-			}
-		}
+		dispatchTask(payload)
 	})
+
+	service.SubscribeSpiderClosed(func(payload *service.SpiderClosedPayload, err error) {
+		log.Println("SubscribeSpiderClosed:", util.JsonStringify(payload, false), "err:", err)
+		if err != nil {
+			return
+		}
+		dispatchTask(payload.ReportPayload)
+	})
+}
+
+func dispatchTask(report *service.ReportPayload) {
+	set := make(map[int64]bool, len(report.RoomIdList))
+	for _, roomId := range report.RoomIdList {
+		set[roomId] = true
+	}
+
+	if report.Working < report.Capacity {
+		n := report.Capacity - report.Working
+		toStartList := make([]int64, 0, n)
+
+	out:
+		for i := 0; n > 0; i++ {
+			list := getLiveList(i)
+			for _, roomId := range list {
+				if set[roomId] {
+					continue
+				}
+				toStartList = append(toStartList, roomId)
+
+				n--
+				if n <= 0 {
+					break out
+				}
+			}
+		}
+
+		for _, roomId := range toStartList {
+			if err := service.PublishStartSpider(report.WorkerId, &service.StartSpiderPayload{
+				RoomId: roomId,
+			}); err != nil {
+				log.Println("service.InsertDyCate:", err)
+			}
+		}
+	}
 }
 
 // FIXME: panic
