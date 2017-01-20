@@ -43,11 +43,29 @@ func (w *worker) run() {
 		select {
 		case <-w.closed:
 			return
-		case message := <-w.spider.GetMessageChan():
-			w.handleMessage(message)
-		case <-ticker:
-			w.pullRoomInfo()
+		default:
+			select {
+			case message := <-w.spider.GetMessageChan():
+				if message == nil {
+					w.checkSpiderStatus()
+				} else {
+					w.handleMessage(message)
+				}
+			case <-ticker:
+				w.pullRoomInfo()
+				w.checkSpiderStatus()
+			}
 		}
+	}
+}
+
+func (w *worker) checkSpiderStatus() {
+	switch w.spider.GetStatus() {
+	case spider.StatusError:
+		log.Println("spider.StatusError:", w.spider.GetLastError())
+		w.close()
+	case spider.StatusClosed:
+		w.close()
 	}
 }
 
