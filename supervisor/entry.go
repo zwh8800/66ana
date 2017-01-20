@@ -2,6 +2,7 @@ package supervisor
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,40 +14,59 @@ import (
 )
 
 func Run() {
-	started := false
+	cateInfos := getCateList()
+	for _, cateInfo := range cateInfos {
+		if _, err := service.InsertDyCate(cateInfo); err != nil {
+			log.Println("service.InsertDyCate:", err)
+		}
+	}
+
 	service.SubscribeReport(func(payload *service.ReportPayload, err error) {
 		log.Println("Report:", util.JsonStringify(payload, false), "err:", err)
 		if err != nil {
 			return
 		}
-		if !started {
-			cateInfos := getCateList()
+		set := make(map[int64]bool, len(payload.RoomIdList))
+		for _, roomId := range payload.RoomIdList {
+			set[roomId] = true
+		}
 
-			for _, cateInfo := range cateInfos {
-				if _, err := service.InsertDyCate(cateInfo); err != nil {
-					log.Println("service.InsertDyCate:", err)
+		if payload.Working < payload.Capacity {
+			n := payload.Capacity - payload.Working
+			toStartList := make([]int64, 0, n)
+
+		out:
+			for i := 0; n > 0; i++ {
+				list := getLiveList(i)
+				for _, roomId := range list {
+					if set[roomId] {
+						continue
+					}
+					toStartList = append(toStartList, roomId)
+
+					n--
+					if n <= 0 {
+						break out
+					}
 				}
 			}
 
-			list := getLiveList()
-
-			for _, roomId := range list {
+			for _, roomId := range toStartList {
 				if err := service.PublishStartSpider(payload.WorkerId, &service.StartSpiderPayload{
 					RoomId: roomId,
 				}); err != nil {
 					log.Println("service.InsertDyCate:", err)
 				}
 			}
-			started = true
 		}
 	})
 }
 
 // FIXME: panic
-func getLiveList() []int64 {
-	resp, err := http.Get("http://api.douyutv.com/api/v1/live")
+func getLiveList(page int) []int64 {
+	resp, err := http.Get(fmt.Sprintf("http://api.douyutv.com/api/v1/live?offset=%d&limit=30", page*30))
 	if err != nil {
-		panic(err)
+		return nil
 	}
 	defer resp.Body.Close()
 	data, err := ioutil.ReadAll(resp.Body)
@@ -77,7 +97,7 @@ func getLiveList() []int64 {
 func getCateList() []*model.CateInfo {
 	resp, err := http.Get("http://open.douyucdn.cn/api/RoomApi/game")
 	if err != nil {
-		panic(err)
+		return nil
 	}
 	defer resp.Body.Close()
 	data, err := ioutil.ReadAll(resp.Body)

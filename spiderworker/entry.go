@@ -55,10 +55,16 @@ func report() {
 func checkClosed() {
 	for {
 		roomId := <-closeChan
+		func() {
+			workerLock.Lock()
+			defer workerLock.Unlock()
+			delete(workers, roomId)
+		}()
+
 		service.PublishSpiderClosed(&service.SpiderClosedPayload{
 			WorkerId:      workerId,
 			RoomId:        roomId,
-			ReportPayload: *generateReport(),
+			ReportPayload: generateReport(),
 		})
 	}
 }
