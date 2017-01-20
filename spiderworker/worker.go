@@ -2,11 +2,17 @@ package spiderworker
 
 import (
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/zwh8800/66ana/service"
 	"github.com/zwh8800/66ana/spider"
+	"golang.org/x/net/proxy"
 )
+
+var proxyList = []string{
+	"10.0.0.220:1080",
+}
 
 type worker struct {
 	roomId    int64
@@ -22,7 +28,20 @@ func newWorker(roomId int64, closeChan chan int64) *worker {
 		closed:    make(chan bool),
 	}
 	var err error
-	w.spider, err = spider.NewSpider(roomId, nil)
+
+	var dialer proxy.Dialer = nil
+	proxyIndex := rand.Intn(len(proxyList)*2 + 1)
+	if proxyIndex < len(proxyList) {
+		dialer, err = proxy.SOCKS5("tcp", proxyList[proxyIndex], nil, proxy.Direct)
+		if err != nil {
+			log.Println("proxy.SOCKS5:", err)
+
+			closeChan <- roomId
+			return nil
+		}
+	}
+
+	w.spider, err = spider.NewSpider(roomId, dialer)
 	if err != nil {
 		log.Println("spider.NewSpider:", err)
 

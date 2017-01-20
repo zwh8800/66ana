@@ -1,8 +1,12 @@
 package main
 
 import (
+	"log"
+	"math/rand"
 	"os"
 	"os/signal"
+	"runtime"
+	"time"
 
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/zwh8800/66ana/conf"
@@ -11,6 +15,8 @@ import (
 )
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
+
 	if conf.Conf.Supervisor.IsSupervisor {
 		supervisor.Run()
 	}
@@ -22,4 +28,8 @@ func main() {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, os.Interrupt, os.Kill)
 	<-ch
+
+	stack := make([]byte, 8192)
+	runtime.Stack(stack, true)
+	log.Println(string(stack))
 }

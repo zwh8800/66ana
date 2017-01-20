@@ -42,6 +42,9 @@ func newJob(roomId int64) {
 	workerLock.Lock()
 	defer workerLock.Unlock()
 	worker := newWorker(roomId, closeChan)
+	if worker == nil {
+		return
+	}
 	workers[roomId] = worker
 }
 
