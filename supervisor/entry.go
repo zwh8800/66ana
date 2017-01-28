@@ -40,11 +40,11 @@ func Run() {
 
 func dispatchTask(report *model.ReportPayload) {
 	roomIdList := make([]int64, len(report.Workers))
-	set := make(map[int64]bool, len(report.Workers))
+	workingRoomIdSet := make(map[int64]bool, len(report.Workers))
 
 	for _, room := range report.Workers {
 		roomIdList = append(roomIdList, room.RoomId)
-		set[room.RoomId] = true
+		workingRoomIdSet[room.RoomId] = true
 	}
 
 	if report.Working < report.Capacity {
@@ -55,7 +55,7 @@ func dispatchTask(report *model.ReportPayload) {
 		for i := 0; n > 0; i++ {
 			list := getLiveList(i)
 			for _, roomId := range list {
-				if set[roomId] {
+				if workingRoomIdSet[roomId] {
 					continue
 				}
 				toStartList = append(toStartList, roomId)
@@ -81,20 +81,20 @@ func dispatchTask(report *model.ReportPayload) {
 func getLiveList(page int) []int64 {
 	resp, err := http.Get(fmt.Sprintf("http://api.douyutv.com/api/v1/live?offset=%d&limit=30", page*30))
 	if err != nil {
-		return nil
+		panic(err)
 	}
 	defer resp.Body.Close()
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil
+		panic(err)
 	}
 	var live model.LiveInfoJson
 	if err := json.Unmarshal(data, &live); err != nil {
-		return nil
+		panic(err)
 	}
 
 	if live.Error != 0 {
-		return nil
+		panic(err)
 	}
 
 	roomIdList := make([]int64, 0, len(live.Data))
@@ -112,20 +112,20 @@ func getLiveList(page int) []int64 {
 func getCateList() []*model.CateInfo {
 	resp, err := http.Get("http://open.douyucdn.cn/api/RoomApi/game")
 	if err != nil {
-		return nil
+		panic(err)
 	}
 	defer resp.Body.Close()
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil
+		panic(err)
 	}
 	var cate model.CateInfoJson
 	if err := json.Unmarshal(data, &cate); err != nil {
-		return nil
+		panic(err)
 	}
 
 	if cate.Error != 0 {
-		return nil
+		panic(err)
 	}
 
 	return cate.Data

@@ -10,7 +10,7 @@ type LiveInfo struct {
 	RoomSrc         string `json:"room_src"`
 	VerticalSrc     string `json:"vertical_src"`
 	IsVertical      int    `json:"isVertical"`
-	CateID          string `json:"cate_id"`
+	CateID          int    `json:"cate_id"`
 	RoomName        string `json:"room_name"`
 	ShowStatus      string `json:"show_status"`
 	Subject         string `json:"subject"`
@@ -24,7 +24,7 @@ type LiveInfo struct {
 	URL             string `json:"url"`
 	GameURL         string `json:"game_url"`
 	GameName        string `json:"game_name"`
-	ChildID         string `json:"child_id"`
+	ChildID         int    `json:"child_id"`
 	Avatar          string `json:"avatar"`
 	AvatarMid       string `json:"avatar_mid"`
 	AvatarSmall     string `json:"avatar_small"`

@@ -13,7 +13,7 @@ import (
 )
 
 var proxyList = []string{
-	"10.0.0.220:1080",
+//"10.0.0.220:1080",
 }
 
 type worker struct {
@@ -104,6 +104,10 @@ func (w *worker) handleMessage(message map[string]string) {
 		}
 
 	case "dgb":
+		_, err := service.InsertDyGiftHistory(message)
+		if err != nil {
+			log.Println("service.InsertDyGift:", err)
+		}
 	default:
 		needIncreaseCounter = false
 	}
