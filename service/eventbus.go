@@ -57,10 +57,12 @@ func subscribe(channel string, genPayload func() interface{}, h func(interface{}
 			message, err := sub.ReceiveMessage()
 			if err != nil {
 				h(nil, err)
+				return
 			}
 			payload := genPayload()
 			if err := json.Unmarshal([]byte(message.Payload), payload); err != nil {
 				h(nil, err)
+				return
 			}
 			h(payload, nil)
 		}
