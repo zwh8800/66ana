@@ -33,6 +33,7 @@ var Conf config
 
 func init() {
 	configPath := flag.String("config", "66ana.toml", "specify a config file")
+	flag.Parse()
 	if _, err := toml.DecodeFile(*configPath, &Conf); err != nil {
 		panic(err)
 	}
