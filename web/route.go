@@ -9,10 +9,15 @@ import (
 
 func route(e *echo.Echo) {
 	e.GET("/working-room", func(c echo.Context) error {
-		workingRoomList, err := service.ListWorkingRoom()
+		workingRidList, err := service.ListWorkingRoom()
 		if err != nil {
 			return err
 		}
+		workingRoomList, err := service.FindRoomByRidList(workingRidList)
+		if err != nil {
+			return err
+		}
+
 		c.JSON(http.StatusOK, workingRoomList)
 		return nil
 	})
