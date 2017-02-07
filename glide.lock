@@ -1,5 +1,5 @@
-hash: a1f1161aa64e998c11fd20813d3e6ef3782b97271c53912b11e59cf830584180
-updated: 2017-01-17T22:27:27.24348277+08:00
+hash: 4d9d5b5ad4e7f1670b9235477e70b9797c95a7394fb934600056e705d75fd4ea
+updated: 2017-02-07T16:11:46.356604349+08:00
 imports:
 - name: github.com/BurntSushi/toml
   version: bbd5bb678321a0d6e58f1099321dfa73391c1b6f
@@ -9,19 +9,47 @@ imports:
   - dialects/postgres
 - name: github.com/jinzhu/inflection
   version: 1c35d901db3da928c72a72d8458480cc9ade058f
+- name: github.com/labstack/echo
+  version: 8d504c1b699c757b267255c53b3e5219f9974abc
+- name: github.com/labstack/gommon
+  version: f72d3c883f8ea180da8f085dd320804c41332ad1
+  subpackages:
+  - color
+  - log
 - name: github.com/lib/pq
   version: 8df6253d1317616f36b0c3740eb30c239a7372cb
   subpackages:
   - hstore
   - oid
+- name: github.com/mattn/go-colorable
+  version: d228849504861217f796da67fae4f6e347643f15
+- name: github.com/mattn/go-isatty
+  version: 30a891c33c7cde7b02a981314b4228ec99380cca
 - name: github.com/satori/go.uuid
   version: 879c5887cd475cd7864858769793b2ceb0d44feb
-- name: golang.org/x/net
-  version: f2499483f923065a842d38eb4c7f1927e6fc6e6d
+- name: github.com/tylerb/graceful
+  version: 4654dfbb6ad53cb5e27f37d99b02e16c1872fbbb
+- name: github.com/valyala/bytebufferpool
+  version: e746df99fe4a3986f4d4f79e13c1e0117ce9c2f7
+- name: github.com/valyala/fasttemplate
+  version: d090d65668a286d9a180d43a19dfdc5dcad8fe88
+- name: golang.org/x/crypto
+  version: 59a182cab66ead4fe21e6472267504ac035edee2
   subpackages:
+  - acme
+  - acme/autocert
+- name: golang.org/x/net
+  version: 236b8f043b920452504e263bc21d354427127473
+  subpackages:
+  - context
+  - context/ctxhttp
   - proxy
+- name: golang.org/x/sys
+  version: 7a6e5648d140666db5d920909e082ca00a87ba2c
+  subpackages:
+  - unix
 - name: gopkg.in/redis.v5
-  version: 8829ddcd8bdb333e477cc845946c4b9b2ef66280
+  version: 9cd49656897843b8f2bf3d9639230cb7aec90d6c
   subpackages:
   - internal
   - internal/consistenthash

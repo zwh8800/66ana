@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/zwh8800/66ana/model"
 	"github.com/zwh8800/66ana/service"
@@ -34,17 +35,21 @@ func Run() {
 		if err != nil {
 			return
 		}
+
+		if err := service.RemoveWorkingRoom(payload.RoomId); err != nil {
+			log.Println("service.RemoveWorkingRoom(", payload.RoomId, "):", err)
+		}
 		dispatchTask(payload.ReportPayload)
 	})
+
+	go removeExpireWorkingRoom()
 }
 
 func dispatchTask(report *model.ReportPayload) {
-	roomIdList := make([]int64, len(report.Workers))
-	workingRoomIdSet := make(map[int64]bool, len(report.Workers))
-
 	for _, room := range report.Workers {
-		roomIdList = append(roomIdList, room.RoomId)
-		workingRoomIdSet[room.RoomId] = true
+		if _, err := service.AddWorkingRoom(room.RoomId); err != nil {
+			log.Println("service.AddWorkingRoom(", room.RoomId, "):", err)
+		}
 	}
 
 	if report.Working < report.Capacity {
@@ -55,7 +60,12 @@ func dispatchTask(report *model.ReportPayload) {
 		for i := 0; n > 0; i++ {
 			list := getLiveList(i)
 			for _, roomId := range list {
-				if workingRoomIdSet[roomId] {
+				exist, err := service.AddWorkingRoom(roomId)
+				if err != nil {
+					log.Println("service.AddWorkingRoom(", roomId, "):", err)
+					continue
+				}
+				if exist {
 					continue
 				}
 				toStartList = append(toStartList, roomId)
@@ -74,6 +84,16 @@ func dispatchTask(report *model.ReportPayload) {
 				log.Println("service.InsertDyCate:", err)
 			}
 		}
+	}
+}
+
+func removeExpireWorkingRoom() {
+	for {
+		if err := service.RemoveExpireWorkingRoom(); err != nil {
+			log.Println("service.RemoveExpireWorkingRoom():", err)
+		}
+
+		time.Sleep(1 * time.Second)
 	}
 }
 

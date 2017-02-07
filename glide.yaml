@@ -1,11 +1,13 @@
 package: github.com/zwh8800/66ana
 import:
 - package: github.com/BurntSushi/toml
-  version: ^0.2.0
+  version: ~0.2.0
 - package: github.com/jinzhu/gorm
-  version: ^1.0.0
+  version: ~1.0.0
 - package: gopkg.in/redis.v5
-  version: ^5.2.2
+  version: ~5.2.2
 - package: golang.org/x/net
 - package: github.com/satori/go.uuid
-  version: ^1.1.0
+  version: ~1.1.0
+- package: github.com/labstack/echo
+  version: ~3.0.3

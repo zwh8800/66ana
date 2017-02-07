@@ -12,17 +12,22 @@ import (
 	"github.com/zwh8800/66ana/conf"
 	"github.com/zwh8800/66ana/spiderworker"
 	"github.com/zwh8800/66ana/supervisor"
+	"github.com/zwh8800/66ana/web"
 )
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	if conf.Conf.Supervisor.IsSupervisor {
-		supervisor.Run()
+		go supervisor.Run()
 	}
 
 	if conf.Conf.SpiderWorker.IsSpiderWorker {
-		spiderworker.Run()
+		go spiderworker.Run()
+	}
+
+	if conf.Conf.Web.IsWeb {
+		go web.Run()
 	}
 
 	ch := make(chan os.Signal, 1)

@@ -27,6 +27,11 @@ type config struct {
 		IsSpiderWorker bool
 		Capacity       int
 	}
+
+	Web struct {
+		IsWeb   bool
+		Address string
+	}
 }
 
 var Conf config
