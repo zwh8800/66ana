@@ -9,11 +9,15 @@ import (
 func InsertDyGiftHistory(message map[string]string) (*model.DyGiftHistory, error) {
 	committed := false
 	tx := dbConn.Begin()
+	if err := tx.Error; err != nil {
+		return nil, err
+	}
 	defer func() {
 		if !committed {
 			tx.Rollback()
 		}
 	}()
+
 	room, user, gift, giftHistory, err := cookModelFromGift(message)
 	if err != nil {
 		return nil, err

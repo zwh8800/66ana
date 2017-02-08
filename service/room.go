@@ -11,6 +11,9 @@ import (
 func InsertDyRoom(roomInfo *model.RoomInfo) (*model.DyRoom, error) {
 	committed := false
 	tx := dbConn.Begin()
+	if err := tx.Error; err != nil {
+		return nil, err
+	}
 	defer func() {
 		if !committed {
 			tx.Rollback()

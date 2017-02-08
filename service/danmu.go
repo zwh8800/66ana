@@ -9,6 +9,9 @@ import (
 func InsertDyDanmu(message map[string]string) (*model.DyDanmu, error) {
 	committed := false
 	tx := dbConn.Begin()
+	if err := tx.Error; err != nil {
+		return nil, err
+	}
 	defer func() {
 		if !committed {
 			tx.Rollback()

@@ -9,6 +9,9 @@ import (
 func InsertDyCate(cateInfo *model.CateInfo) (*model.DyCate, error) {
 	committed := false
 	tx := dbConn.Begin()
+	if err := tx.Error; err != nil {
+		return nil, err
+	}
 	defer func() {
 		if !committed {
 			tx.Rollback()
