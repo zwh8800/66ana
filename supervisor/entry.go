@@ -47,7 +47,7 @@ func Run() {
 }
 
 var (
-	dispatchLock = sync.Mutex{}
+	dispatchLock sync.Mutex
 )
 
 func dispatchTask(report *model.ReportPayload) {
