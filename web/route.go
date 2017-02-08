@@ -8,6 +8,9 @@ import (
 )
 
 func route(e *echo.Echo) {
+	e.File("/", "static/index.html")
+	e.Static("/static", "static")
+
 	e.GET("/working-room", func(c echo.Context) error {
 		workingRidList, err := service.ListWorkingRoom()
 		if err != nil {

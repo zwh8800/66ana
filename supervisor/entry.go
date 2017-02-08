@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/zwh8800/66ana/model"
@@ -45,7 +46,14 @@ func Run() {
 	go removeExpireWorkingRoom()
 }
 
+var (
+	dispatchLock = sync.Mutex{}
+)
+
 func dispatchTask(report *model.ReportPayload) {
+	dispatchLock.Lock()
+	defer dispatchLock.Unlock()
+
 	for _, room := range report.Workers {
 		if _, err := service.AddWorkingRoom(room.RoomId); err != nil {
 			log.Println("service.AddWorkingRoom(", room.RoomId, "):", err)
