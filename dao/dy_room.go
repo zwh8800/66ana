@@ -19,7 +19,8 @@ func InsertOrUpdateRoom(db *gorm.DB, room *model.DyRoom) error {
 		return err
 	}
 	if !room.Equals(updatedRoom) {
-		if err := db.Model(room).Update(updatedRoom).
+		room.Assign(&updatedRoom)
+		if err := db.Save(room).
 			Error; err != nil {
 			return err
 		}

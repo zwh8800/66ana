@@ -36,7 +36,8 @@ func InsertDyRoom(roomInfo *model.RoomInfo) (*model.DyRoom, error) {
 		return nil, err
 	}
 	if !room.Equals(updatedRoom) {
-		if err := tx.Model(room).Update(updatedRoom).
+		room.Assign(&updatedRoom)
+		if err := tx.Save(room).
 			Error; err != nil {
 			return nil, err
 		}
@@ -50,7 +51,8 @@ func InsertDyRoom(roomInfo *model.RoomInfo) (*model.DyRoom, error) {
 			return nil, err
 		}
 		if !gift.Equals(updatedGift) {
-			if err := tx.Model(gift).Update(updatedGift).
+			gift.Assign(&updatedGift)
+			if err := tx.Save(gift).
 				Error; err != nil {
 				return nil, err
 			}

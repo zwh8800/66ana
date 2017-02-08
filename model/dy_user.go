@@ -31,3 +31,13 @@ func (a DyUser) Equals(b DyUser) bool {
 
 	return a == b
 }
+
+func (a *DyUser) Assign(b *DyUser) {
+	// omit some field
+	m := a.Model
+	f := a.FirstAppearedRoomId
+
+	*a = *b
+	a.Model = m
+	a.FirstAppearedRoomId = f
+}

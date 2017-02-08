@@ -29,3 +29,11 @@ func (a DyGift) Equals(b DyGift) bool {
 
 	return a == b
 }
+
+func (a *DyGift) Assign(b *DyGift) {
+	// omit some field
+	m := a.Model
+
+	*a = *b
+	a.Model = m
+}

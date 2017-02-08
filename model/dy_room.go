@@ -34,3 +34,11 @@ func (a DyRoom) Equals(b DyRoom) bool {
 
 	return a == b
 }
+
+func (a *DyRoom) Assign(b *DyRoom) {
+	// omit some field
+	m := a.Model
+
+	*a = *b
+	a.Model = m
+}

@@ -25,3 +25,11 @@ func (a DyCate) Equals(b DyCate) bool {
 
 	return a == b
 }
+
+func (a *DyCate) Assign(b *DyCate) {
+	// omit some field
+	m := a.Model
+
+	*a = *b
+	a.Model = m
+}

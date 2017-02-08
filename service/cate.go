@@ -29,7 +29,8 @@ func InsertDyCate(cateInfo *model.CateInfo) (*model.DyCate, error) {
 		return nil, err
 	}
 	if !cate.Equals(updatedCate) {
-		if err := tx.Model(cate).Update(updatedCate).
+		cate.Assign(&updatedCate)
+		if err := tx.Save(cate).
 			Error; err != nil {
 			return nil, err
 		}

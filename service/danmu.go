@@ -31,13 +31,13 @@ func InsertDyDanmu(message map[string]string) (*model.DyDanmu, error) {
 	user.LastAppearedRoomId = int64(room.ID)
 	updatedUser := *user
 	updatedUser.FirstAppearedRoomId = 0
-	if err := tx.Set("gorm:query_option", "FOR UPDATE").
-		Where(model.DyUser{Uid: user.Uid}).
+	if err := tx.Where(model.DyUser{Uid: user.Uid}).
 		Attrs(user).FirstOrCreate(user).Error; err != nil {
 		return nil, err
 	}
 	if !user.Equals(updatedUser) {
-		if err := tx.Model(user).Update(updatedUser).
+		user.Assign(&updatedUser)
+		if err := tx.Save(user).
 			Error; err != nil {
 			return nil, err
 		}

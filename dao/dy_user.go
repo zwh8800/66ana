@@ -14,7 +14,8 @@ func InsertOrUpdateDyUser(db *gorm.DB, user *model.DyUser) error {
 		return err
 	}
 	if !user.Equals(updatedUser) {
-		if err := db.Model(user).Update(updatedUser).
+		user.Assign(&updatedUser)
+		if err := db.Save(user).
 			Error; err != nil {
 			return err
 		}
