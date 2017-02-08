@@ -46,6 +46,7 @@ func Run() {
 	go removeExpireWorkingRoom()
 }
 
+// FIXME: 用更细粒度的锁，或者放redis里解决
 var (
 	dispatchLock sync.Mutex
 )
