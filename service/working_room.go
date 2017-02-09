@@ -77,9 +77,17 @@ func IsInWorkingRoomQueue(rid int64) (bool, error) {
 	}
 	keys := make([]string, 0, len(workersKey))
 	for _, workerId := range workerIdList {
-		keys = append(keys, workingRoomQueueKey+workerId)
+		key := workingRoomQueueKey + workerId
+		if redisClient.Exists(key).Val() {
+			keys = append(keys, key)
+		}
 	}
-	redisClient.SUnionStore(workingRoomQueueAllKey, keys...)
+	if len(keys) == 0 {
+		return false, nil
+	}
+	if err := redisClient.SUnionStore(workingRoomQueueAllKey, keys...).Err(); err != nil {
+		return false, err
+	}
 	return redisClient.SIsMember(workingRoomQueueAllKey, rid).Result()
 }
 
