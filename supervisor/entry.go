@@ -62,7 +62,7 @@ func dispatchTask(report *model.ReportPayload) {
 	dispatchLock.Lock()
 	defer dispatchLock.Unlock()
 	if err := service.AddWorker(report.BasicWorkerInfo); err != nil {
-		log.Println("service.AddWorker(", report.WorkerId, "):", err)
+		log.Println("service.AddWorker(", report, "):", err)
 		return
 	}
 

@@ -21,12 +21,15 @@ func route(e *echo.Echo) {
 		if err != nil {
 			return err
 		}
+		ret := make(map[string]interface{})
+		ret["workingRoomIdList"] = workingRidList
+		ret["workingRoomList"] = workingRoomList
 
-		c.JSON(http.StatusOK, workingRoomList)
+		c.JSON(http.StatusOK, ret)
 		return nil
 	})
 
-	e.GET("/working-room-queue", func(c echo.Context) error {
+	e.GET("/workers", func(c echo.Context) error {
 		workers, err := service.ListWorkerIdList()
 		if err != nil {
 			return err
