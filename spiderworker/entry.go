@@ -28,6 +28,7 @@ func init() {
 
 func Run() {
 	service.SubscribeStartSpider(workerId, func(payload *model.StartSpiderPayload, err error) {
+		log.Println("SubscribeStartSpider", util.JsonStringify(payload, false))
 		if err != nil {
 			log.Println("SubscribeStartSpider:", err)
 			return
