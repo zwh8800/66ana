@@ -83,7 +83,7 @@ func dispatchTask(report *model.ReportPayload) {
 	}
 
 	n := int64(report.Capacity) - (int64(report.Working) + queueLen)
-	toStartList := make([]int64, 0, n)
+	toStartList := make([]int64, 0)
 out:
 	for i := 0; n > 0; i++ {
 		list, err := getLiveList(i)
