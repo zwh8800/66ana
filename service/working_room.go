@@ -1,9 +1,11 @@
 package service
 
 import (
+	"encoding/json"
 	"strconv"
 	"time"
 
+	"github.com/zwh8800/66ana/model"
 	"gopkg.in/redis.v5"
 )
 
@@ -15,13 +17,24 @@ const (
 	workingRoomTTL         = 30 * time.Second
 )
 
-func AddWorker(workerId string) error {
+func AddWorker(workerInfo *model.BasicWorkerInfo) error {
 	score := workingRoomTTL.Seconds() + float64(time.Now().Unix())
-	return redisClient.ZAdd(workersKey, redis.Z{Score: score, Member: workerId}).Err()
+	if err := redisClient.ZAdd(workersKey, redis.Z{Score: score, Member: workerInfo.WorkerId}).Err(); err != nil {
+		return err
+	}
+	workerInfoJson, err := json.Marshal(workerInfo)
+	if err != nil {
+		return err
+	}
+	return redisClient.Set(workersKey+workerInfo.WorkerId, workerInfoJson, workingRoomTTL).Err()
 }
 
-func ListWorkers() ([]string, error) {
+func ListWorkerIdList() ([]string, error) {
 	return redisClient.ZRange(workersKey, 0, -1).Result()
+}
+
+func GetWorkerInfo(workerId string) (string, error) {
+	return redisClient.Get(workersKey + workerId).Result()
 }
 
 func RemoveExpireWorker() error {
@@ -58,7 +71,7 @@ func RemoveFromWorkingRoomQueue(workerId string, rid int64) error {
 }
 
 func IsInWorkingRoomQueue(rid int64) (bool, error) {
-	workerIdList, err := ListWorkers()
+	workerIdList, err := ListWorkerIdList()
 	if err != nil {
 		return false, err
 	}

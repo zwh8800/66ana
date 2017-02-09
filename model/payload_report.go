@@ -1,14 +1,17 @@
 package model
 
-type ReportPayload struct {
+type BasicWorkerInfo struct {
 	WorkerId string
 	Capacity int
 	Working  int
-
-	Workers []*WorkerInfo
-
 	CpuCount int
 	MemUsage int64
+}
+
+type ReportPayload struct {
+	*BasicWorkerInfo
+
+	Workers []*WorkerInfo
 }
 
 type WorkerInfo struct {

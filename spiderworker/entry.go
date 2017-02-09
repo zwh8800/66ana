@@ -85,14 +85,15 @@ func getWorkerInfoList() []*model.WorkerInfo {
 }
 
 func generateReport() *model.ReportPayload {
-	return &model.ReportPayload{
+	basicInfo := &model.BasicWorkerInfo{
 		WorkerId: workerId,
 		Capacity: conf.Conf.SpiderWorker.Capacity,
 		Working:  len(workers),
-
-		Workers: getWorkerInfoList(),
-
 		CpuCount: util.CpuCount(),
 		MemUsage: util.MemUsage(),
+	}
+	return &model.ReportPayload{
+		BasicWorkerInfo: basicInfo,
+		Workers:         getWorkerInfoList(),
 	}
 }

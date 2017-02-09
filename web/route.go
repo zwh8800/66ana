@@ -1,10 +1,10 @@
 package web
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/labstack/echo"
-	"github.com/zwh8800/66ana/model"
 	"github.com/zwh8800/66ana/service"
 )
 
@@ -27,22 +27,32 @@ func route(e *echo.Echo) {
 	})
 
 	e.GET("/working-room-queue", func(c echo.Context) error {
-		workers, err := service.ListWorkers()
+		workers, err := service.ListWorkerIdList()
 		if err != nil {
 			return err
 		}
-		workerDetail := make(map[string][]*model.DyRoom)
+		workerDetail := make(map[string]map[string]interface{})
 
 		for _, workerId := range workers {
-			workingRidList, err := service.ListWorkingRoomQueue(workerId)
+			workerInfoStr, err := service.GetWorkerInfo(workerId)
 			if err != nil {
 				return err
 			}
-			workingRoomList, err := service.FindRoomByRidList(workingRidList)
+			var workerInfo map[string]interface{}
+			if err := json.Unmarshal([]byte(workerInfoStr), &workerInfo); err != nil {
+				return err
+			}
+
+			queueRidList, err := service.ListWorkingRoomQueue(workerId)
 			if err != nil {
 				return err
 			}
-			workerDetail[workerId] = workingRoomList
+			queueRoomList, err := service.FindRoomByRidList(queueRidList)
+			if err != nil {
+				return err
+			}
+			workerInfo["queueRoomList"] = queueRoomList
+			workerDetail[workerId] = workerInfo
 		}
 
 		c.JSON(http.StatusOK, workerDetail)
