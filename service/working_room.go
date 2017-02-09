@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	"strconv"
 	"time"
 
@@ -18,6 +19,10 @@ const (
 )
 
 func AddWorker(workerInfo *model.BasicWorkerInfo) error {
+	if workerInfo.WorkerId == "" {
+		return errors.New("workerInfo.WorkerId == \"\"")
+	}
+
 	score := workingRoomTTL.Seconds() + float64(time.Now().Unix())
 	if err := redisClient.ZAdd(workersKey, redis.Z{Score: score, Member: workerInfo.WorkerId}).Err(); err != nil {
 		return err
