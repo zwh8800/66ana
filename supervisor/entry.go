@@ -61,55 +61,84 @@ var (
 func dispatchTask(report *model.ReportPayload) {
 	dispatchLock.Lock()
 	defer dispatchLock.Unlock()
+	if err := service.AddWorker(report.WorkerId); err != nil {
+		log.Println("service.AddWorker(", report.WorkerId, "):", err)
+		return
+	}
 
 	for _, room := range report.Workers {
-		if _, err := service.AddWorkingRoom(room.RoomId); err != nil {
+		if err := service.RemoveFromWorkingRoomQueue(report.WorkerId, room.RoomId); err != nil {
+			log.Println("service.RemoveFromWorkingRoomQueue(", report.WorkerId, room.RoomId, "):", err)
+			return
+		}
+		if err := service.AddWorkingRoom(room.RoomId); err != nil {
 			log.Println("service.AddWorkingRoom(", room.RoomId, "):", err)
+			return
 		}
 	}
 
-	if report.Working < report.Capacity {
-		n := report.Capacity - report.Working
-		toStartList := make([]int64, 0, n)
+	queueLen, err := service.CountWorkingRoomQueue(report.WorkerId)
+	if err != nil {
+		log.Println("service.CountWorkingRoomQueue", report.WorkerId, "):", err)
+	}
 
-	out:
-		for i := 0; n > 0; i++ {
-			list, err := getLiveList(i)
+	n := int64(report.Capacity) - (int64(report.Working) + queueLen)
+	toStartList := make([]int64, 0, n)
+out:
+	for i := 0; n > 0; i++ {
+		list, err := getLiveList(i)
+		if err != nil {
+			log.Println("getLiveList(", i, "):", err)
+			i--
+			time.Sleep(3 * time.Second)
+			continue
+		}
+		for _, roomId := range list {
+			exist, err := service.IsWorkingRoom(roomId)
 			if err != nil {
-				log.Println("getLiveList(i):", err)
-				i--
-				time.Sleep(3 * time.Second)
+				log.Println("service.IsWorkingRoom(", roomId, "):", err)
 				continue
 			}
-			for _, roomId := range list {
-				exist, err := service.AddWorkingRoom(roomId)
-				if err != nil {
-					log.Println("service.AddWorkingRoom(", roomId, "):", err)
-					continue
-				}
-				if exist {
-					continue
-				}
-				toStartList = append(toStartList, roomId)
+			if exist {
+				continue
+			}
+			exist, err = service.IsInWorkingRoomQueue(roomId)
+			if err != nil {
+				log.Println("service.IsInWorkingRoomQueue(", roomId, "):", err)
+				continue
+			}
+			if exist {
+				continue
+			}
 
-				n--
-				if n <= 0 {
-					break out
-				}
+			if err := service.AddToWorkingRoomQueue(report.WorkerId, roomId); err != nil {
+				log.Println("service.AddToWorkingRoomQueue(", report.WorkerId, roomId, "):", err)
+				continue
+			}
+
+			toStartList = append(toStartList, roomId)
+
+			n--
+			if n <= 0 {
+				break out
 			}
 		}
+	}
 
-		for _, roomId := range toStartList {
-			if err := service.PublishStartSpider(report.WorkerId, &model.StartSpiderPayload{
-				RoomId: roomId,
-			}); err != nil {
-				log.Println("service.InsertDyCate:", err)
-			}
+	for _, roomId := range toStartList {
+		if err := service.PublishStartSpider(report.WorkerId, &model.StartSpiderPayload{
+			RoomId: roomId,
+		}); err != nil {
+			log.Println("service.InsertDyCate:", err)
 		}
 	}
 }
 
 func removeExpireWorkingRoom() {
+	if err := service.RemoveExpireWorker(); err != nil {
+		log.Println("service.RemoveExpireWorker():", err)
+		return
+	}
 	if err := service.RemoveExpireWorkingRoom(); err != nil {
 		log.Println("service.RemoveExpireWorkingRoom():", err)
 		return
