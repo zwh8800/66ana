@@ -2,6 +2,7 @@ package service
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/zwh8800/66ana/model"
 )
@@ -96,6 +97,10 @@ func cookModelFromDanmu(message map[string]string) (*model.DyRoom, *model.DyUser
 		Color:   model.DyDanmuColor(color),
 		Client:  model.DyClientType(client),
 		Content: message["txt"],
+	}
+
+	if timestamp, err := strconv.ParseInt(message["timestamp"], 10, 64); err == nil {
+		danmu.CreatedAt = time.Unix(0, timestamp)
 	}
 
 	return room, user, danmu, nil

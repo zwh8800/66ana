@@ -2,6 +2,7 @@ package service
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/zwh8800/66ana/model"
 )
@@ -114,6 +115,9 @@ func cookModelFromGift(message map[string]string) (*model.DyRoom, *model.DyUser,
 		Count:     int(count),
 		Hits:      int(hits),
 		GiftStyle: message["gs"],
+	}
+	if timestamp, err := strconv.ParseInt(message["timestamp"], 10, 64); err == nil {
+		giftHistory.CreatedAt = time.Unix(0, timestamp)
 	}
 
 	return room, user, gift, giftHistory, nil

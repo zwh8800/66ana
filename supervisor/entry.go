@@ -16,12 +16,8 @@ import (
 )
 
 func Run() {
-	cateInfos := getCateList()
-	for _, cateInfo := range cateInfos {
-		if _, err := service.InsertDyCate(cateInfo); err != nil {
-			log.Println("service.InsertDyCate:", err)
-		}
-	}
+	updateCateInfo()
+	removeExpireWorkingRoom()
 
 	service.SubscribeReport(func(payload *model.ReportPayload, err error) {
 		log.Println("Report:", util.JsonStringify(payload, false), "err:", err)
@@ -43,7 +39,18 @@ func Run() {
 		dispatchTask(payload.ReportPayload)
 	})
 
-	go removeExpireWorkingRoom()
+	go func() {
+		for {
+			removeExpireWorkingRoom()
+			time.Sleep(1 * time.Second)
+		}
+	}()
+	go func() {
+		for {
+			updateCateInfo()
+			time.Sleep(1 * time.Minute)
+		}
+	}()
 }
 
 // FIXME: 用更细粒度的锁，或者放redis里解决
@@ -67,7 +74,13 @@ func dispatchTask(report *model.ReportPayload) {
 
 	out:
 		for i := 0; n > 0; i++ {
-			list := getLiveList(i)
+			list, err := getLiveList(i)
+			if err != nil {
+				log.Println("getLiveList(i):", err)
+				i--
+				time.Sleep(3 * time.Second)
+				continue
+			}
 			for _, roomId := range list {
 				exist, err := service.AddWorkingRoom(roomId)
 				if err != nil {
@@ -97,33 +110,42 @@ func dispatchTask(report *model.ReportPayload) {
 }
 
 func removeExpireWorkingRoom() {
-	for {
-		if err := service.RemoveExpireWorkingRoom(); err != nil {
-			log.Println("service.RemoveExpireWorkingRoom():", err)
-		}
-
-		time.Sleep(1 * time.Second)
+	if err := service.RemoveExpireWorkingRoom(); err != nil {
+		log.Println("service.RemoveExpireWorkingRoom():", err)
+		return
 	}
 }
 
-// FIXME: panic
-func getLiveList(page int) []int64 {
+func updateCateInfo() {
+	cateInfos, err := getCateList()
+	if err != nil {
+		log.Println("getCateList():", err)
+		return
+	}
+	for _, cateInfo := range cateInfos {
+		if _, err := service.InsertDyCate(cateInfo); err != nil {
+			log.Println("service.InsertDyCate:", err)
+		}
+	}
+}
+
+func getLiveList(page int) ([]int64, error) {
 	resp, err := http.Get(fmt.Sprintf("http://api.douyutv.com/api/v1/live?offset=%d&limit=30", page*30))
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	var live model.LiveInfoJson
 	if err := json.Unmarshal(data, &live); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	if live.Error != 0 {
-		panic(err)
+		return nil, err
 	}
 
 	roomIdList := make([]int64, 0, len(live.Data))
@@ -134,28 +156,27 @@ func getLiveList(page int) []int64 {
 		}
 		roomIdList = append(roomIdList, rid)
 	}
-	return roomIdList
+	return roomIdList, nil
 }
 
-// FIXME: panic
-func getCateList() []*model.CateInfo {
+func getCateList() ([]*model.CateInfo, error) {
 	resp, err := http.Get("http://open.douyucdn.cn/api/RoomApi/game")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	var cate model.CateInfoJson
 	if err := json.Unmarshal(data, &cate); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	if cate.Error != 0 {
-		panic(err)
+		return nil, err
 	}
 
-	return cate.Data
+	return cate.Data, nil
 }

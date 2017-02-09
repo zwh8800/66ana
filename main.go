@@ -34,7 +34,7 @@ func main() {
 	signal.Notify(ch, os.Interrupt, os.Kill)
 	<-ch
 
-	stack := make([]byte, 65536)
+	stack := make([]byte, 4*1024*1024)
 	runtime.Stack(stack, true)
 	log.Println(string(stack))
 }

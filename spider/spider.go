@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/zwh8800/66ana/model"
@@ -107,9 +108,9 @@ func (s *Spider) run() {
 				s.status = StatusError
 				s.lastError = err
 				return
-			} else {
-				s.msgChan <- message
 			}
+			message["timestamp"] = strconv.FormatInt(time.Now().UnixNano(), 10)
+			s.msgChan <- message
 		}
 	}()
 }
