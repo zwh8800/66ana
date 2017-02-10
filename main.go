@@ -16,6 +16,7 @@ import (
 )
 
 func main() {
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
 	rand.Seed(time.Now().UnixNano())
 
 	if conf.Conf.Supervisor.IsSupervisor {
