@@ -143,6 +143,10 @@ func removeExpireWorkingRoom() {
 		log.Println("service.RemoveExpireWorkingRoom():", err)
 		return
 	}
+	if err := service.RemoveExpireWorkingRoomQueue(); err != nil {
+		log.Println("service.RemoveExpireWorkingRoomQueue():", err)
+		return
+	}
 }
 
 func updateCateInfo() {

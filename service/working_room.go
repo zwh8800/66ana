@@ -48,18 +48,20 @@ func RemoveExpireWorker() error {
 
 func AddToWorkingRoomQueue(workerId string, rid int64) error {
 	key := workingRoomQueueKey + workerId
-	if err := redisClient.SAdd(key, rid).Err(); err != nil {
-		return err
-	}
-	return redisClient.Expire(key, workingRoomTTL).Err()
+	score := workingRoomTTL.Seconds() + float64(time.Now().Unix())
+
+	return redisClient.ZAdd(key, redis.Z{Score: score, Member: rid}).Err()
 }
 
 func CountWorkingRoomQueue(workerId string) (int64, error) {
-	return redisClient.SCard(workingRoomQueueKey + workerId).Result()
+	key := workingRoomQueueKey + workerId
+	return redisClient.ZCard(key).Result()
 }
 
 func ListWorkingRoomQueue(workerId string) ([]int64, error) {
-	roomStrList, err := redisClient.SMembers(workingRoomQueueKey + workerId).Result()
+	key := workingRoomQueueKey + workerId
+
+	roomStrList, err := redisClient.ZRange(key, 0, -1).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -68,8 +70,24 @@ func ListWorkingRoomQueue(workerId string) ([]int64, error) {
 
 func RemoveFromWorkingRoomQueue(workerId string, rid int64) error {
 	key := workingRoomQueueKey + workerId
+	return redisClient.ZRem(key, rid).Err()
+}
 
-	return redisClient.SRem(key, rid).Err()
+func RemoveExpireWorkingRoomQueue() error {
+	workerIdList, err := ListWorkerIdList()
+	if err != nil {
+		return err
+	}
+	for _, workerId := range workerIdList {
+		key := workingRoomQueueKey + workerId
+		if redisClient.Exists(key).Val() {
+			if err := redisClient.ZRemRangeByScore(key,
+				"0", strconv.FormatInt(time.Now().Unix(), 10)).Err(); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func IsInWorkingRoomQueue(rid int64) (bool, error) {
@@ -87,10 +105,16 @@ func IsInWorkingRoomQueue(rid int64) (bool, error) {
 	if len(keys) == 0 {
 		return false, nil
 	}
-	if err := redisClient.SUnionStore(workingRoomQueueAllKey, keys...).Err(); err != nil {
+	if err := redisClient.ZUnionStore(workingRoomQueueAllKey, redis.ZStore{}, keys...).Err(); err != nil {
 		return false, err
 	}
-	return redisClient.SIsMember(workingRoomQueueAllKey, rid).Result()
+	if _, err := redisClient.ZRank(workingRoomQueueAllKey, strconv.FormatInt(rid, 10)).Result(); err == nil {
+		return true, nil
+	} else if err == redis.Nil {
+		return false, nil
+	} else {
+		return false, err
+	}
 }
 
 func AddWorkingRoom(rid int64) error {
