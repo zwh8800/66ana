@@ -63,7 +63,8 @@ func newWorker(roomId int64, closeChan chan int64) *worker {
 func (w *worker) run() {
 	w.pullRoomInfo()
 
-	ticker := time.Tick(10 * time.Second)
+	ticker := time.Tick(5 * time.Second)
+	round := 0
 	for {
 		select {
 		case <-w.closed:
@@ -77,8 +78,12 @@ func (w *worker) run() {
 					w.handleMessage(message)
 				}
 			case <-ticker:
-				w.pullRoomInfo()
-				w.checkSpiderStatus()
+				if round%2 == 0 {
+					w.pullRoomInfo()
+				} else {
+					w.checkSpiderStatus()
+				}
+				round++
 			}
 		}
 	}
