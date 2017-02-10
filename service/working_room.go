@@ -69,10 +69,7 @@ func ListWorkingRoomQueue(workerId string) ([]int64, error) {
 func RemoveFromWorkingRoomQueue(workerId string, rid int64) error {
 	key := workingRoomQueueKey + workerId
 
-	if err := redisClient.SRem(key, rid).Err(); err != nil {
-		return err
-	}
-	return redisClient.Expire(key, workingRoomTTL).Err()
+	return redisClient.SRem(key, rid).Err()
 }
 
 func IsInWorkingRoomQueue(rid int64) (bool, error) {
