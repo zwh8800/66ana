@@ -212,7 +212,8 @@ func (s *Spider) GetLastError() error {
 }
 
 func (s *Spider) Close() {
-	//TODO: not implemented yet
+	s.conn.Close()
+	s.status = StatusClosed
 }
 
 func (s *Spider) GetRoomInfo() (*model.RoomInfo, error) {
