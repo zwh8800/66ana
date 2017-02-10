@@ -12,6 +12,8 @@ import (
 	"golang.org/x/net/proxy"
 )
 
+const minOnlineCount = 100
+
 var proxyList = []string{
 //"10.0.0.220:1080",
 }
@@ -132,7 +134,7 @@ func (w *worker) pullRoomInfo() {
 		log.Println("service.InsertDyRoom:", err)
 		return
 	}
-	if room.OnlineCount <= 0 {
+	if room.OnlineCount < minOnlineCount {
 		w.close()
 	}
 }
