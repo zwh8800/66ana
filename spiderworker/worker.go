@@ -4,12 +4,12 @@ import (
 	"log"
 	"time"
 
-	"github.com/zwh8800/66ana/conf"
 	"github.com/zwh8800/66ana/model"
 	"github.com/zwh8800/66ana/service"
 	"github.com/zwh8800/66ana/spider"
 	"github.com/zwh8800/66ana/util"
 	"golang.org/x/net/proxy"
+	"github.com/zwh8800/66ana/conf"
 )
 
 var proxyPool = NewProxyPoll(proxyList)
@@ -154,6 +154,5 @@ func (w *worker) close() {
 func (w *worker) GetWorkerInfo() *model.WorkerInfo {
 	return &model.WorkerInfo{
 		RoomId: w.roomId,
-		Speed:  w.speeder.GetSpeed(),
 	}
 }

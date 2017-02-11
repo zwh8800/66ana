@@ -6,6 +6,7 @@ type BasicWorkerInfo struct {
 	Working  int
 	CpuCount int
 	MemUsage int64
+	Speed    float64
 }
 
 type ReportPayload struct {
@@ -16,5 +17,4 @@ type ReportPayload struct {
 
 type WorkerInfo struct {
 	RoomId int64
-	Speed  float64
 }

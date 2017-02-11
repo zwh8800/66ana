@@ -73,26 +73,30 @@ func checkClosed() {
 	}
 }
 
-func getWorkerInfoList() []*model.WorkerInfo {
+func getWorkerInfoListAndSpeed() ([]*model.WorkerInfo, float64) {
+	speed := 0.0
 	list := make([]*model.WorkerInfo, 0, len(workers))
 	workerLock.RLock()
 	defer workerLock.RUnlock()
 	for _, worker := range workers {
 		list = append(list, worker.GetWorkerInfo())
+		speed += worker.speeder.GetSpeed()
 	}
-	return list
+	return list, speed
 }
 
 func generateReport() *model.ReportPayload {
+	wil, speed := getWorkerInfoListAndSpeed()
 	basicInfo := &model.BasicWorkerInfo{
 		WorkerId: workerId,
 		Capacity: conf.Conf.SpiderWorker.Capacity,
 		Working:  len(workers),
 		CpuCount: util.CpuCount(),
 		MemUsage: util.MemUsage(),
+		Speed:    speed,
 	}
 	return &model.ReportPayload{
 		BasicWorkerInfo: basicInfo,
-		Workers:         getWorkerInfoList(),
+		Workers:         wil,
 	}
 }
