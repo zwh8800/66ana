@@ -4,14 +4,13 @@ import (
 	"log"
 	"time"
 
+	"github.com/zwh8800/66ana/conf"
 	"github.com/zwh8800/66ana/model"
 	"github.com/zwh8800/66ana/service"
 	"github.com/zwh8800/66ana/spider"
 	"github.com/zwh8800/66ana/util"
 	"golang.org/x/net/proxy"
 )
-
-const minOnlineCount = 100
 
 var proxyPool = NewProxyPoll(proxyList)
 
@@ -140,7 +139,7 @@ func (w *worker) pullRoomInfo() {
 		log.Println("service.InsertDyRoom:", err)
 		return
 	}
-	if room.OnlineCount < minOnlineCount {
+	if room.OnlineCount < conf.Conf.Spider.MinOnlineCount {
 		w.close()
 	}
 }

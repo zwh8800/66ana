@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/zwh8800/66ana/conf"
 	"github.com/zwh8800/66ana/model"
 	"github.com/zwh8800/66ana/service"
 	"github.com/zwh8800/66ana/util"
@@ -183,6 +184,9 @@ func getLiveList(page int) ([]int64, error) {
 
 	roomIdList := make([]int64, 0, len(live.Data))
 	for _, l := range live.Data {
+		if l.Online < conf.Conf.Spider.MinOnlineCount {
+			continue
+		}
 		rid, err := strconv.ParseInt(l.RoomID, 10, 64)
 		if err != nil {
 			continue

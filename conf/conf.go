@@ -19,6 +19,10 @@ type config struct {
 		DB       int
 	}
 
+	Spider struct {
+		MinOnlineCount int
+	}
+
 	Supervisor struct {
 		IsSupervisor bool
 	}
