@@ -1,5 +1,5 @@
-hash: 4d9d5b5ad4e7f1670b9235477e70b9797c95a7394fb934600056e705d75fd4ea
-updated: 2017-02-07T16:11:46.356604349+08:00
+hash: 8fefd490b90e438d87f85c06bf5dd4e93cab6b4f38f940ea26181c26e2ceb891
+updated: 2017-02-12T00:29:59.940814751+08:00
 imports:
 - name: github.com/BurntSushi/toml
   version: bbd5bb678321a0d6e58f1099321dfa73391c1b6f
@@ -22,9 +22,11 @@ imports:
   - hstore
   - oid
 - name: github.com/mattn/go-colorable
-  version: d228849504861217f796da67fae4f6e347643f15
+  version: 5411d3eea5978e6cdc258b30de592b60df6aba96
 - name: github.com/mattn/go-isatty
-  version: 30a891c33c7cde7b02a981314b4228ec99380cca
+  version: 281032e84ae07510239465db46bf442aa44b953a
+- name: github.com/pebbe/zmq4
+  version: 86a301353efd154593d5c851a092dc21e907a601
 - name: github.com/satori/go.uuid
   version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: github.com/tylerb/graceful
@@ -34,22 +36,22 @@ imports:
 - name: github.com/valyala/fasttemplate
   version: d090d65668a286d9a180d43a19dfdc5dcad8fe88
 - name: golang.org/x/crypto
-  version: 59a182cab66ead4fe21e6472267504ac035edee2
+  version: 453249f01cfeb54c3d549ddb75ff152ca243f9d8
   subpackages:
   - acme
   - acme/autocert
 - name: golang.org/x/net
-  version: 236b8f043b920452504e263bc21d354427127473
+  version: 61557ac0112b576429a0df080e1c2cef5dfbb642
   subpackages:
   - context
   - context/ctxhttp
   - proxy
 - name: golang.org/x/sys
-  version: 7a6e5648d140666db5d920909e082ca00a87ba2c
+  version: aaabbdc969c3935a2a7f61efac801e7163c73a2a
   subpackages:
   - unix
 - name: gopkg.in/redis.v5
-  version: 9cd49656897843b8f2bf3d9639230cb7aec90d6c
+  version: 2fe9c5cc0a8da9faeba3a45511a4ece8f7e37dc2
   subpackages:
   - internal
   - internal/consistenthash
