@@ -67,7 +67,6 @@ func checkClosed() {
 		}()
 
 		service.PublishSpiderClosed(&model.SpiderClosedPayload{
-			WorkerId:      workerId,
 			RoomId:        roomId,
 			ReportPayload: generateReport(),
 		})

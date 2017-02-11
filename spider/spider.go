@@ -49,11 +49,12 @@ func NewSpider(roomId int64, dialer proxy.Dialer) (*Spider, error) {
 	var err error
 	if dialer != nil {
 		conn, err = dialer.Dial("tcp", openDouyuAddr)
-		s.httpClient = &http.Client{
-			Transport: &http.Transport{
-				Dial: dialer.Dial,
-			},
-		}
+		//s.httpClient = &http.Client{
+		//	Transport: &http.Transport{
+		//		Dial: dialer.Dial,
+		//	},
+		//}
+		s.httpClient = http.DefaultClient
 	} else {
 		conn, err = net.Dial("tcp", openDouyuAddr)
 		s.httpClient = http.DefaultClient

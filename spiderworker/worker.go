@@ -2,7 +2,6 @@ package spiderworker
 
 import (
 	"log"
-	"math/rand"
 	"time"
 
 	"github.com/zwh8800/66ana/model"
@@ -14,9 +13,7 @@ import (
 
 const minOnlineCount = 100
 
-var proxyList = []string{
-//"10.0.0.220:1080",
-}
+var proxyPool = NewProxyPoll(proxyList)
 
 type worker struct {
 	roomId    int64
@@ -35,29 +32,38 @@ func newWorker(roomId int64, closeChan chan int64) *worker {
 
 		speeder: util.NewSpeedometer(),
 	}
-	var err error
+	go func() {
+		var err error
 
-	var dialer proxy.Dialer = nil
-	proxyIndex := rand.Intn(len(proxyList)*2 + 1)
-	if proxyIndex < len(proxyList) {
-		dialer, err = proxy.SOCKS5("tcp", proxyList[proxyIndex], nil, proxy.Direct)
+		var dialer proxy.Dialer = nil
+		proxyAddr := proxyPool.GetRandomProxy()
+		if proxyAddr != "" {
+			dialer, err = proxy.SOCKS5("tcp", proxyAddr, nil, proxy.Direct)
+			if err != nil {
+				log.Println("proxy.SOCKS5:", err)
+				proxyPool.DeleteProxy(proxyAddr)
+				log.Println("proxyPool length:", proxyPool.Length())
+
+				closeChan <- roomId
+				return
+			}
+		}
+
+		w.spider, err = spider.NewSpider(roomId, dialer)
 		if err != nil {
-			log.Println("proxy.SOCKS5:", err)
+			log.Println("spider.NewSpider:", err)
+			if proxyAddr != "" {
+				proxyPool.DeleteProxy(proxyAddr)
+
+				log.Println("proxyPool length:", proxyPool.Length())
+			}
 
 			closeChan <- roomId
-			return nil
+			return
 		}
-	}
 
-	w.spider, err = spider.NewSpider(roomId, dialer)
-	if err != nil {
-		log.Println("spider.NewSpider:", err)
-
-		closeChan <- roomId
-		return nil
-	}
-
-	go w.run()
+		go w.run()
+	}()
 
 	return w
 }
