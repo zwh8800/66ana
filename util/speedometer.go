@@ -19,8 +19,14 @@ func (s *Speedometer) Add() {
 }
 
 func (s *Speedometer) GetSpeed() float64 {
-	speed := float64(s.counter) / float64(time.Now().Sub(s.startTime)/time.Second)
-	s.startTime = time.Now()
-	atomic.StoreUint64(&s.counter, 0)
+	diffTime := float64(time.Now().Sub(s.startTime)) / float64(time.Second)
+	if diffTime == 0 {
+		return 0
+	}
+	speed := float64(s.counter) / diffTime
+	if diffTime > 1 {
+		s.startTime = time.Now()
+		atomic.StoreUint64(&s.counter, 0)
+	}
 	return speed
 }
