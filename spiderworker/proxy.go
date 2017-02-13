@@ -44,12 +44,3 @@ func (p *ProxyPool) DeleteProxy(paddr string) {
 func (p *ProxyPool) Length() int {
 	return len(p.proxyMap)
 }
-
-var proxyList = []string{
-	"10.0.0.109:1080",
-	"10.0.0.109:1081",
-	"10.0.0.109:1082",
-	"10.0.0.109:1083",
-	"10.0.0.109:1084",
-	"10.0.0.109:1085",
-}

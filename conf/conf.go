@@ -36,6 +36,10 @@ type config struct {
 		IsWeb   bool
 		Address string
 	}
+
+	Proxy struct {
+		ProxyList []string
+	}
 }
 
 var Conf config
