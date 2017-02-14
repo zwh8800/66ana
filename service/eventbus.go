@@ -4,12 +4,17 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/zwh8800/66ana/constants"
 	"github.com/zwh8800/66ana/model"
 )
 
+const (
+	EventReport       = "66ana:report"
+	EventStartSpider  = "66ana:startspider"
+	EventSpiderClosed = "66ana:spiderclosed"
+)
+
 func SubscribeReport(h func(*model.ReportPayload, error)) error {
-	return subscribe(constants.EventReport, func() interface{} { return &model.ReportPayload{} },
+	return subscribe(EventReport, func() interface{} { return &model.ReportPayload{} },
 		func(payload interface{}, err error) {
 			report, _ := payload.(*model.ReportPayload)
 			h(report, err)
@@ -17,11 +22,11 @@ func SubscribeReport(h func(*model.ReportPayload, error)) error {
 }
 
 func PublishReport(payload *model.ReportPayload) error {
-	return publish(constants.EventReport, payload)
+	return publish(EventReport, payload)
 }
 
 func SubscribeStartSpider(workerId string, h func(*model.StartSpiderPayload, error)) error {
-	return subscribe(constants.EventStartSpider+":"+workerId, func() interface{} { return &model.StartSpiderPayload{} },
+	return subscribe(EventStartSpider+":"+workerId, func() interface{} { return &model.StartSpiderPayload{} },
 		func(payload interface{}, err error) {
 			report, _ := payload.(*model.StartSpiderPayload)
 			h(report, err)
@@ -29,11 +34,11 @@ func SubscribeStartSpider(workerId string, h func(*model.StartSpiderPayload, err
 }
 
 func PublishStartSpider(id string, payload *model.StartSpiderPayload) error {
-	return publish(constants.EventStartSpider+":"+id, payload)
+	return publish(EventStartSpider+":"+id, payload)
 }
 
 func SubscribeSpiderClosed(h func(*model.SpiderClosedPayload, error)) error {
-	return subscribe(constants.EventSpiderClosed, func() interface{} { return &model.SpiderClosedPayload{} },
+	return subscribe(EventSpiderClosed, func() interface{} { return &model.SpiderClosedPayload{} },
 		func(payload interface{}, err error) {
 			report, _ := payload.(*model.SpiderClosedPayload)
 			h(report, err)
@@ -41,7 +46,7 @@ func SubscribeSpiderClosed(h func(*model.SpiderClosedPayload, error)) error {
 }
 
 func PublishSpiderClosed(payload *model.SpiderClosedPayload) error {
-	return publish(constants.EventSpiderClosed, payload)
+	return publish(EventSpiderClosed, payload)
 }
 
 func subscribe(channel string, genPayload func() interface{}, h func(interface{}, error)) error {

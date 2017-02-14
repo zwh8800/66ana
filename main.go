@@ -9,6 +9,7 @@ import (
 	"time"
 
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	zmq "github.com/pebbe/zmq4"
 	"github.com/zwh8800/66ana/conf"
 	"github.com/zwh8800/66ana/spiderworker"
 	"github.com/zwh8800/66ana/supervisor"
@@ -18,6 +19,8 @@ import (
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 	rand.Seed(time.Now().UnixNano())
+
+	printVersions()
 
 	if conf.Conf.Supervisor.IsSupervisor {
 		go supervisor.Run()
@@ -38,4 +41,9 @@ func main() {
 	stack := make([]byte, 4*1024*1024)
 	runtime.Stack(stack, true)
 	log.Println(string(stack))
+}
+
+func printVersions() {
+	major, minor, patch := zmq.Version()
+	log.Printf("zeromq version: %d.%d.%d", major, minor, patch)
 }
