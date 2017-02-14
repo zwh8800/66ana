@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/zwh8800/66ana/conf"
@@ -54,14 +53,7 @@ func Run() {
 	}()
 }
 
-// FIXME: 用更细粒度的锁，或者放redis里解决
-var (
-	dispatchLock sync.Mutex
-)
-
 func dispatchTask(report *model.ReportPayload) {
-	dispatchLock.Lock()
-	defer dispatchLock.Unlock()
 	if err := service.AddWorker(report.BasicWorkerInfo); err != nil {
 		log.Println("service.AddWorker(", util.JsonStringify(report.BasicWorkerInfo, false), "):", err)
 		return
