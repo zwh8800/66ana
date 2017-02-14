@@ -18,6 +18,9 @@ type config struct {
 		Password string
 		DB       int
 	}
+	Zeromq struct {
+		Addr string
+	}
 
 	Spider struct {
 		MinOnlineCount int
