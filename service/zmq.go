@@ -13,7 +13,7 @@ const zmqAddressFormat = "tcp://%s:%d"
 
 const (
 	workerReportPort = 23330 + iota
-	pushPullJobPort
+	dispatchPort
 )
 
 var (
