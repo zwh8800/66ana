@@ -41,6 +41,7 @@ func Run() {
 	}()
 }
 
+// TODO: 打上log，看看分配堆积是咋回事
 func dispatchLoop() {
 	workerCount, err := service.CountWorkers()
 	if err != nil {
