@@ -30,7 +30,7 @@ func route(e *echo.Echo) {
 	})
 
 	e.GET("/workers", func(c echo.Context) error {
-		workers, err := service.ListWorkerIdList()
+		workers, err := service.ListWorkers()
 		if err != nil {
 			return err
 		}
@@ -46,15 +46,6 @@ func route(e *echo.Echo) {
 				return err
 			}
 
-			queueRidList, err := service.ListWorkingRoomQueue(workerId)
-			if err != nil {
-				return err
-			}
-			queueRoomList, err := service.FindRoomByRidList(queueRidList)
-			if err != nil {
-				return err
-			}
-			workerInfo["queueRoomList"] = queueRoomList
 			workerDetail[workerId] = workerInfo
 		}
 

@@ -31,43 +31,49 @@ func newWorker(roomId int64, closeChan chan int64) *worker {
 
 		speeder: util.NewSpeedometer(),
 	}
-	go func() {
-		var err error
 
-		var dialer proxy.Dialer = nil
-		proxyAddr := proxyPool.GetRandomProxy()
-		if proxyAddr != "" {
-			dialer, err = proxy.SOCKS5("tcp", proxyAddr, nil, proxy.Direct)
-			if err != nil {
-				log.Println("proxy.SOCKS5:", err)
-				proxyPool.DeleteProxy(proxyAddr)
-				log.Println("proxyPool length:", proxyPool.Length())
-
-				closeChan <- roomId
-				return
-			}
-		}
-
-		w.spider, err = spider.NewSpider(roomId, dialer)
-		if err != nil {
-			log.Println("spider.NewSpider:", err)
-			if proxyAddr != "" {
-				proxyPool.DeleteProxy(proxyAddr)
-
-				log.Println("proxyPool length:", proxyPool.Length())
-			}
-
-			closeChan <- roomId
-			return
-		}
-
-		go w.run()
-	}()
+	go w.run()
 
 	return w
 }
 
+func (w *worker) init() error {
+	var err error
+
+	var dialer proxy.Dialer = nil
+	proxyAddr := proxyPool.GetRandomProxy()
+	if proxyAddr != "" {
+		dialer, err = proxy.SOCKS5("tcp", proxyAddr, nil, proxy.Direct)
+		if err != nil {
+			log.Println("proxy.SOCKS5:", err)
+			proxyPool.DeleteProxy(proxyAddr)
+			log.Println("proxyPool length:", proxyPool.Length())
+
+			w.closeChan <- w.roomId
+			return err
+		}
+	}
+
+	w.spider, err = spider.NewSpider(w.roomId, dialer)
+	if err != nil {
+		log.Println("spider.NewSpider:", err)
+		if proxyAddr != "" {
+			proxyPool.DeleteProxy(proxyAddr)
+
+			log.Println("proxyPool length:", proxyPool.Length())
+		}
+
+		w.closeChan <- w.roomId
+		return err
+	}
+	return nil
+}
+
 func (w *worker) run() {
+	if err := w.init(); err != nil {
+		return
+	}
+
 	w.pullRoomInfo()
 
 	ticker := time.Tick(5 * time.Second)
