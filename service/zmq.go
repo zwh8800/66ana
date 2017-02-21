@@ -14,6 +14,7 @@ const zmqAddressFormat = "tcp://%s:%d"
 const (
 	workerReportPort = 23330 + iota
 	dispatchPort
+	spiderClosedPort
 )
 
 var (
@@ -21,6 +22,8 @@ var (
 	workerReportRepSocket  *zmq.Socket = nil
 	dispatchWorkPushSocket *zmq.Socket = nil
 	dispatchWorkPullSocket *zmq.Socket = nil
+	spiderClosedPullSocket *zmq.Socket = nil
+	spiderClosedPushSocket *zmq.Socket = nil
 )
 
 func GetWorkerReport() (*model.ReportPayload, error) {
@@ -135,4 +138,55 @@ func PullWork() (*model.StartSpiderPayload, error) {
 	}
 
 	return payload, nil
+}
+
+func PullSpiderClosed() (*model.SpiderClosedPayload, error) {
+	if spiderClosedPullSocket == nil {
+		var err error
+		spiderClosedPullSocket, err = zmq.NewSocket(zmq.PULL)
+		if err != nil {
+			return nil, err
+		}
+		addr := fmt.Sprintf(zmqAddressFormat, conf.Conf.Zeromq.Addr, spiderClosedPort)
+		if err := spiderClosedPullSocket.Connect(addr); err != nil {
+			return nil, err
+		}
+	}
+
+	data, err := spiderClosedPullSocket.Recv(0)
+	if err != nil {
+		return nil, err
+	}
+
+	payload := &model.SpiderClosedPayload{}
+	if err := json.Unmarshal([]byte(data), payload); err != nil {
+		return nil, err
+	}
+
+	return payload, nil
+}
+
+func PushWorkerClosed(payload *model.SpiderClosedPayload) error {
+	if spiderClosedPushSocket == nil {
+		var err error
+		spiderClosedPushSocket, err = zmq.NewSocket(zmq.PUSH)
+		if err != nil {
+			return err
+		}
+		addr := fmt.Sprintf(zmqAddressFormat, conf.Conf.Zeromq.Addr, spiderClosedPort)
+		if err := spiderClosedPushSocket.Bind(addr); err != nil {
+			return err
+		}
+	}
+
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	if _, err := spiderClosedPushSocket.Send(string(data), 0); err != nil {
+		return err
+	}
+
+	return nil
 }
