@@ -20,10 +20,25 @@ func Run() {
 	updateCateInfo()
 	removeExpire()
 
+	removeClosedSuccessChan := make(chan bool, 50)
+
+	go func() {
+		ticker := time.Tick(10 * time.Second)
+		for {
+			select {
+			case <-removeClosedSuccessChan:
+				log.Println("dispatchLoop by removeClosedSuccessChan")
+			case <-ticker:
+				log.Println("dispatchLoop by ticker")
+			}
+			dispatchLoop()
+		}
+	}()
+
 	go func() {
 		for {
-			dispatchLoop()
-			time.Sleep(10 * time.Second)
+			removeClosed()
+			removeClosedSuccessChan <- true
 		}
 	}()
 
@@ -117,6 +132,28 @@ out:
 		}); err != nil {
 			log.Println("service.DispatchWork:", err)
 		}
+	}
+}
+
+func removeClosed() {
+	payload, err := service.PullSpiderClosed()
+	if err != nil {
+		log.Println("service.RemoveExpireWorker():", err)
+		return
+	}
+	if err := service.AddWorker(payload.BasicWorkerInfo); err != nil {
+		log.Println("service.AddWorker(", util.JsonStringify(payload.BasicWorkerInfo, false), "):", err)
+		return
+	}
+	for _, room := range payload.Workers {
+		if err := service.AddWorkingRoom(room.RoomId); err != nil {
+			log.Println("service.AddWorkingRoom(", room.RoomId, "):", err)
+			return
+		}
+	}
+	if err := service.RemoveWorkingRoom(payload.RoomId); err != nil {
+		log.Println("service.RemoveWorkingRoom(", payload.RoomId, "):", err)
+		return
 	}
 }
 
