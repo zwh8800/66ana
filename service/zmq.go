@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	zmq "github.com/pebbe/zmq4"
 	"github.com/zwh8800/66ana/conf"
@@ -33,6 +34,7 @@ func GetWorkerReport() (*model.ReportPayload, error) {
 		if err != nil {
 			return nil, err
 		}
+		workerReportReqSocket.SetSndtimeo(5 * time.Second)
 		addr := fmt.Sprintf(zmqAddressFormat, conf.Conf.Zeromq.Addr, workerReportPort)
 		if err := workerReportReqSocket.Bind(addr); err != nil {
 			return nil, err
