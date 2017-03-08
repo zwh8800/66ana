@@ -1,11 +1,9 @@
 package model
 
-import "github.com/jinzhu/gorm"
-
 const DyDanmuTableName = "dy_danmu"
 
 type DyDanmu struct {
-	gorm.Model
+	Model
 
 	Cid     string
 	UserId  int64

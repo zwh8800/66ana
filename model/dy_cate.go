@@ -1,11 +1,9 @@
 package model
 
-import "github.com/jinzhu/gorm"
-
 const DyCateTableName = "dy_cate"
 
 type DyCate struct {
-	gorm.Model
+	Model
 
 	Cid       int64
 	GameName  string

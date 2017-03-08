@@ -1,11 +1,9 @@
 package model
 
-import "github.com/jinzhu/gorm"
-
 const DyUserEnterTableName = "dy_user_enter"
 
 type DyUserEnter struct {
-	gorm.Model
+	Model
 
 	UserId int64
 	RoomId int64

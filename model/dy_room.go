@@ -1,27 +1,23 @@
 package model
 
-import (
-	"time"
-
-	"github.com/jinzhu/gorm"
-)
+import "time"
 
 const DyRoomTableName = "dy_room"
 
 type DyRoom struct {
-	gorm.Model
+	Model
 
-	Rid          int64
-	CateId       int64
-	Name         string
-	Status       DyRoomStatus
-	Thumb        string
-	Avatar       string
-	FansCount    int
-	OnlineCount  int
-	OwnerName    string
-	Weight       int
-	LastLiveTime time.Time
+	Rid          int64        `json:"rid"`
+	CateId       int64        `json:"cateId"`
+	Name         string       `json:"name"`
+	Status       DyRoomStatus `json:"status"`
+	Thumb        string       `json:"thumb"`
+	Avatar       string       `json:"avatar"`
+	FansCount    int          `json:"fansCount"`
+	OnlineCount  int          `json:"onlineCount"`
+	OwnerName    string       `json:"ownerName"`
+	Weight       int          `json:"weight"`
+	LastLiveTime time.Time    `json:"lastLiveTime"`
 }
 
 func (*DyRoom) TableName() string {
