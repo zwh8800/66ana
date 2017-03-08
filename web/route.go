@@ -15,7 +15,7 @@ func route(e *echo.Echo) {
 	e.Static("/static", "static")
 
 	e.GET("/working-room", func(c echo.Context) error {
-		workingRidList, err := service.ListWorkingRoom()
+		workingRidList, err := service.ListWorkingRoom(0, -1)
 		if err != nil {
 			return err
 		}
@@ -70,11 +70,56 @@ func route(e *echo.Echo) {
 			log.Println("service.CountWorkingRoom():", err)
 			c.JSON(http.StatusOK, model.NewApiResponse(
 				model.CodeInternalServerError, model.MessageInternalServerError))
+			return nil
 		}
 
 		ret := model.NewApiOKResponse()
 		ret.Data = &model.ApiWorkingRoomCount{
 			Count: count,
+		}
+
+		c.JSON(http.StatusOK, ret)
+		return nil
+	})
+
+	e.GET("/working-room/list", func(c echo.Context) error {
+		var input model.ReqPager
+		if err := c.Bind(&input); err != nil {
+			return err
+		}
+		if input.Offset < 0 || input.Limit < 0 {
+			c.JSON(http.StatusOK, model.NewApiResponse(
+				model.CodeOutOfRange, model.MessageOutOfRange))
+			return nil
+		}
+
+		count, err := service.CountWorkingRoom()
+		if err != nil {
+			log.Println("service.CountWorkingRoom():", err)
+			c.JSON(http.StatusOK, model.NewApiResponse(
+				model.CodeInternalServerError, model.MessageInternalServerError))
+			return nil
+		}
+
+		workingRidList, err := service.ListWorkingRoom(input.Offset, input.Limit)
+		if err != nil {
+			log.Println("service.ListWorkingRoom():", err)
+			c.JSON(http.StatusOK, model.NewApiResponse(
+				model.CodeInternalServerError, model.MessageInternalServerError))
+			return nil
+		}
+		workingRoomList, err := service.FindRoomByRidList(workingRidList)
+		if err != nil {
+			log.Println("service.FindRoomByRidList():", err)
+			c.JSON(http.StatusOK, model.NewApiResponse(
+				model.CodeInternalServerError, model.MessageInternalServerError))
+			return nil
+		}
+
+		ret := model.NewApiOKResponse()
+		ret.Data = &model.ApiWorkingRoomList{
+			Total:           count,
+			WorkingRoomList: workingRoomList,
 		}
 
 		c.JSON(http.StatusOK, ret)

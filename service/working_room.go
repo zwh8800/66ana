@@ -122,8 +122,9 @@ func AddWorkingRoom(rid int64) error {
 	return redisClient.ZAdd(workingRoomKey, redis.Z{Score: score, Member: rid}).Err()
 }
 
-func ListWorkingRoom() ([]int64, error) {
-	roomStrList, err := redisClient.ZRange(workingRoomKey, 0, -1).Result()
+// TODO: 这个分页不对，应该先排序后分页，这个排序有问题
+func ListWorkingRoom(offset, limit int64) ([]int64, error) {
+	roomStrList, err := redisClient.ZRange(workingRoomKey, offset, offset+limit-1).Result()
 	if err != nil {
 		return nil, err
 	}
