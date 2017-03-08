@@ -130,6 +130,10 @@ func ListWorkingRoom() ([]int64, error) {
 	return stringToInt64List(roomStrList)
 }
 
+func CountWorkingRoom() (int64, error) {
+	return redisClient.ZCard(workingRoomKey).Result()
+}
+
 func RemoveWorkingRoom(rid int64) error {
 	return redisClient.ZRem(workingRoomKey, rid).Err()
 }

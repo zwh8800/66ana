@@ -7,7 +7,7 @@
 ```json
 {
   "code": "OK",   // 英文纯大写，下划线分割
-  "message": "调用成功",
+  "message": "操作成功",
   "data": null
 }
 ```

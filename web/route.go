@@ -2,9 +2,11 @@ package web
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/labstack/echo"
+	"github.com/zwh8800/66ana/model"
 	"github.com/zwh8800/66ana/service"
 )
 
@@ -61,4 +63,22 @@ func route(e *echo.Echo) {
 		c.JSON(http.StatusOK, workerDetail)
 		return nil
 	})
+
+	e.GET("/working-room/count", func(c echo.Context) error {
+		count, err := service.CountWorkingRoom()
+		if err != nil {
+			log.Println("service.CountWorkingRoom():", err)
+			c.JSON(http.StatusOK, model.NewApiResponse(
+				model.CodeInternalServerError, model.MessageInternalServerError))
+		}
+
+		ret := model.NewApiOKResponse()
+		ret.Data = &model.ApiWorkingRoomCount{
+			Count: count,
+		}
+
+		c.JSON(http.StatusOK, ret)
+		return nil
+	})
+
 }
