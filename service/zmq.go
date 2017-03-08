@@ -34,7 +34,9 @@ func GetWorkerReport() (*model.ReportPayload, error) {
 		if err != nil {
 			return nil, err
 		}
-		workerReportReqSocket.SetSndtimeo(5 * time.Second)
+		if err := workerReportReqSocket.SetSndtimeo(5 * time.Second); err != nil {
+			return nil, err
+		}
 		addr := fmt.Sprintf(zmqAddressFormat, conf.Conf.Zeromq.Addr, workerReportPort)
 		if err := workerReportReqSocket.Bind(addr); err != nil {
 			return nil, err
@@ -96,6 +98,9 @@ func DispatchWork(payload *model.StartSpiderPayload) error {
 		var err error
 		dispatchWorkPushSocket, err = zmq.NewSocket(zmq.PUSH)
 		if err != nil {
+			return err
+		}
+		if err := dispatchWorkPushSocket.SetSndtimeo(5 * time.Second); err != nil {
 			return err
 		}
 		addr := fmt.Sprintf(zmqAddressFormat, conf.Conf.Zeromq.Addr, dispatchPort)

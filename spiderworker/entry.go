@@ -52,6 +52,14 @@ func checkClosed() {
 			defer workersLock.Unlock()
 			delete(workers, roomId) // gc will handle all
 		}()
+
+		if err := service.PushWorkerClosed(&model.SpiderClosedPayload{
+			RoomId:        roomId,
+			ReportPayload: generateReport(),
+		}); err != nil {
+			log.Println("service.PullWork():", err)
+			continue
+		}
 	}
 }
 
@@ -63,7 +71,7 @@ func pullNewJob() {
 		log.Println("service.PullWork()", util.JsonStringify(payload, false))
 		if err != nil {
 			log.Println("service.PullWork():", err)
-			return
+			continue
 		}
 		newJob(payload.RoomId)
 	}
