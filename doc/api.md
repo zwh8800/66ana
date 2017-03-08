@@ -47,6 +47,10 @@ GET
 
 获取当前正在抓取的房间详细信息
 
+### url
+
+`https://BASE/working-room/list`
+
 ### method 
 
 GET
