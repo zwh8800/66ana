@@ -159,7 +159,20 @@ func parseWeight(weightStr string) (int, error) {
 
 func FindRoomByRidList(ridList []int64) ([]*model.DyRoom, error) {
 	var roomList []*model.DyRoom
-	if err := dbConn.Where("rid in (?)", ridList).Find(&roomList).Error; err != nil {
+	if err := dbConn.Where("rid in (?)", ridList).
+		Order("online_count desc").
+		Find(&roomList).Error; err != nil {
+		return nil, err
+	}
+	return roomList, nil
+}
+
+func FindRoomByRidListPage(ridList []int64, offset, limit int64) ([]*model.DyRoom, error) {
+	var roomList []*model.DyRoom
+	if err := dbConn.Where("rid in (?)", ridList).
+		Order("online_count desc").
+		Offset(int(offset)).Limit(int(limit)).
+		Find(&roomList).Error; err != nil {
 		return nil, err
 	}
 	return roomList, nil
