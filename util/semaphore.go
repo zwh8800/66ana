@@ -7,12 +7,14 @@ func NewSemaphore(n int) Semaphore {
 	return make(Semaphore, n)
 }
 
+// acquire n resources
 func (s Semaphore) P(n int) {
 	for i := 0; i < n; i++ {
 		s <- empty{}
 	}
 }
 
+// release n resources
 func (s Semaphore) V(n int) {
 	for i := 0; i < n; i++ {
 		<-s

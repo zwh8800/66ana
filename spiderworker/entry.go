@@ -16,14 +16,14 @@ var (
 	workers        map[int64]*worker
 	workersLock    sync.RWMutex
 	closeChan      chan int64
-	pullNewJobChan chan bool
+	pullNewJobSema util.Semaphore
 )
 
 func init() {
 	workerId = uuid.NewV4().String()
 	workers = make(map[int64]*worker, conf.Conf.SpiderWorker.Capacity)
 	closeChan = make(chan int64, conf.Conf.SpiderWorker.Capacity/10)
-	pullNewJobChan = make(chan bool, conf.Conf.SpiderWorker.Capacity) // 假设 pull 的速度慢 10 倍，保证不阻塞 checkClosed 线程
+	pullNewJobSema = util.NewSemaphore(conf.Conf.SpiderWorker.Capacity)
 }
 
 func Run() {
@@ -37,16 +37,12 @@ func Run() {
 
 	go checkClosed()
 	go pullNewJob()
-
-	for i := 0; i < conf.Conf.SpiderWorker.Capacity; i++ {
-		pullNewJobChan <- true
-	}
 }
 
 func checkClosed() {
 	for {
 		roomId := <-closeChan
-		pullNewJobChan <- true
+		pullNewJobSema.V(1)
 		func() {
 			workersLock.Lock()
 			defer workersLock.Unlock()
@@ -66,7 +62,7 @@ func checkClosed() {
 // 这个 goroutine 应该比上面那个慢
 func pullNewJob() {
 	for {
-		<-pullNewJobChan
+		pullNewJobSema.P(1)
 		payload, err := service.PullWork()
 		log.Println("service.PullWork()", util.JsonStringify(payload, false))
 		if err != nil {
