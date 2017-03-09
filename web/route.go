@@ -15,7 +15,7 @@ func route(e *echo.Echo) {
 	e.Static("/static", "static")
 
 	e.GET("/working-room", func(c echo.Context) error {
-		workingRidList, err := service.ListWorkingRoom(0, -1)
+		workingRidList, err := service.ListWorkingRoom()
 		if err != nil {
 			return err
 		}
@@ -101,14 +101,14 @@ func route(e *echo.Echo) {
 			return nil
 		}
 
-		workingRidList, err := service.ListWorkingRoom(input.Offset, input.Limit)
+		workingRidList, err := service.ListWorkingRoom()
 		if err != nil {
 			log.Println("service.ListWorkingRoom():", err)
 			c.JSON(http.StatusOK, model.NewApiResponse(
 				model.CodeInternalServerError, model.MessageInternalServerError))
 			return nil
 		}
-		workingRoomList, err := service.FindRoomByRidList(workingRidList)
+		workingRoomList, err := service.FindRoomByRidListPage(workingRidList, input.Offset, input.Limit)
 		if err != nil {
 			log.Println("service.FindRoomByRidList():", err)
 			c.JSON(http.StatusOK, model.NewApiResponse(
