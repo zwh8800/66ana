@@ -22,12 +22,11 @@ func Run() {
 	removeClosedSuccessChan := make(chan bool, 50)
 
 	go func() {
-		ticker := time.Tick(10 * time.Second)
 		for {
 			select {
 			case <-removeClosedSuccessChan:
 				log.Println("dispatchLoop by removeClosedSuccessChan")
-			case <-ticker:
+			case <-time.After(10 * time.Second):
 				log.Println("dispatchLoop by ticker")
 			}
 			dispatchLoop()
