@@ -100,7 +100,7 @@ func DispatchWork(payload *model.StartSpiderPayload) error {
 		if err != nil {
 			return err
 		}
-		if err := dispatchWorkPushSocket.SetSndtimeo(100 * time.Millisecond); err != nil {
+		if err := dispatchWorkPushSocket.SetSndtimeo(500 * time.Millisecond); err != nil {
 			return err
 		}
 		addr := fmt.Sprintf(zmqAddressFormat, conf.Conf.Zeromq.Addr, dispatchPort)

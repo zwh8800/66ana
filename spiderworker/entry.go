@@ -79,9 +79,6 @@ func pullNewJob() {
 
 func newJob(roomId int64) {
 	worker := newWorker(roomId, closeChan)
-	if worker == nil {
-		return
-	}
 
 	workersLock.Lock()
 	defer workersLock.Unlock()
