@@ -155,7 +155,7 @@ func PullSpiderClosed() (*model.SpiderClosedPayload, error) {
 			return nil, err
 		}
 		addr := fmt.Sprintf(zmqAddressFormat, conf.Conf.Zeromq.Addr, spiderClosedPort)
-		if err := spiderClosedPullSocket.Connect(addr); err != nil {
+		if err := spiderClosedPullSocket.Bind(addr); err != nil {
 			return nil, err
 		}
 	}
@@ -181,7 +181,7 @@ func PushWorkerClosed(payload *model.SpiderClosedPayload) error {
 			return err
 		}
 		addr := fmt.Sprintf(zmqAddressFormat, conf.Conf.Zeromq.Addr, spiderClosedPort)
-		if err := spiderClosedPushSocket.Bind(addr); err != nil {
+		if err := spiderClosedPushSocket.Connect(addr); err != nil {
 			return err
 		}
 	}
