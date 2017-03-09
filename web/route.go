@@ -65,7 +65,7 @@ func route(e *echo.Echo) {
 	})
 
 	e.GET("/working-room/count", func(c echo.Context) error {
-		c.Response().Header().Add(echo.HeaderAccessControlAllowOrigin, "*")
+		c.Response().Header().Add(echo.HeaderAccessControlAllowOrigin, "localhost:8080")
 
 		count, err := service.CountWorkingRoom()
 		if err != nil {
@@ -85,7 +85,7 @@ func route(e *echo.Echo) {
 	})
 
 	e.GET("/working-room/list", func(c echo.Context) error {
-		c.Response().Header().Add(echo.HeaderAccessControlAllowOrigin, "*")
+		c.Response().Header().Add(echo.HeaderAccessControlAllowOrigin, "localhost:8080")
 
 		var input model.ReqPager
 		if err := c.Bind(&input); err != nil {
