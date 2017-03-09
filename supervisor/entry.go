@@ -15,7 +15,6 @@ import (
 	"github.com/zwh8800/66ana/util"
 )
 
-// TODO: 删除失效的working room不够迅速（RemoveWorkingRoom）目前全靠expire（30s延迟）
 func Run() {
 	updateCateInfo()
 	removeExpire()
