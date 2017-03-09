@@ -2,9 +2,7 @@ package spiderworker
 
 import (
 	"log"
-	"math/rand"
 	"sync"
-	"time"
 
 	"github.com/satori/go.uuid"
 	"github.com/zwh8800/66ana/conf"
@@ -14,75 +12,78 @@ import (
 )
 
 var (
-	workerId   string
-	workers    map[int64]*worker
-	workerLock sync.RWMutex
-	closeChan  chan int64
+	workerId       string
+	workers        map[int64]*worker
+	workersLock    sync.RWMutex
+	closeChan      chan int64
+	pullNewJobSema util.Semaphore
 )
 
 func init() {
 	workerId = uuid.NewV4().String()
 	workers = make(map[int64]*worker, conf.Conf.SpiderWorker.Capacity)
 	closeChan = make(chan int64, conf.Conf.SpiderWorker.Capacity/10)
+	pullNewJobSema = util.NewSemaphore(conf.Conf.SpiderWorker.Capacity)
 }
 
 func Run() {
-	service.SubscribeStartSpider(workerId, func(payload *model.StartSpiderPayload, err error) {
-		log.Println("SubscribeStartSpider", util.JsonStringify(payload, false))
+	service.ServeWorkerReport(func(err error) *model.ReportPayload {
 		if err != nil {
-			log.Println("SubscribeStartSpider:", err)
-			return
+			log.Println("ServeWorkerReport:", err)
+			return nil
 		}
-		newJob(payload.RoomId)
+		return generateReport()
 	})
 
-	go report()
 	go checkClosed()
-}
-
-func newJob(roomId int64) {
-	workerLock.Lock()
-	defer workerLock.Unlock()
-	worker := newWorker(roomId, closeChan)
-	if worker == nil {
-		return
-	}
-	workers[roomId] = worker
-}
-
-func report() {
-	for {
-		service.PublishReport(generateReport())
-		time.Sleep(time.Duration(10+rand.Intn(4)-2) * time.Second) // +/- 2s
-	}
+	go pullNewJob()
 }
 
 func checkClosed() {
 	for {
 		roomId := <-closeChan
+		pullNewJobSema.V(1)
 		func() {
-			workerLock.Lock()
-			defer workerLock.Unlock()
-			delete(workers, roomId)
+			workersLock.Lock()
+			defer workersLock.Unlock()
+			delete(workers, roomId) // gc will handle all
 		}()
 
-		service.PublishSpiderClosed(&model.SpiderClosedPayload{
+		if err := service.PushWorkerClosed(&model.SpiderClosedPayload{
 			RoomId:        roomId,
 			ReportPayload: generateReport(),
-		})
+		}); err != nil {
+			log.Println("service.PullWork():", err)
+			continue
+		}
 	}
 }
 
-func getWorkerInfoListAndSpeed() ([]*model.WorkerInfo, float64) {
-	speed := 0.0
-	list := make([]*model.WorkerInfo, 0, len(workers))
-	workerLock.RLock()
-	defer workerLock.RUnlock()
-	for _, worker := range workers {
-		list = append(list, worker.GetWorkerInfo())
-		speed += worker.speeder.GetSpeed()
+// 这个 goroutine 应该比上面那个慢
+func pullNewJob() {
+	for {
+		pullNewJobSema.P(1)
+		payload, err := service.PullWork()
+		log.Println("service.PullWork()", util.JsonStringify(payload, false))
+		if err != nil {
+			log.Println("service.PullWork():", err)
+			continue
+		}
+		newJob(payload.RoomId)
 	}
-	return list, speed
+}
+
+func newJob(roomId int64) {
+	workersLock.Lock()
+	defer workersLock.Unlock()
+
+	if _, ok := workers[roomId]; ok {
+		pullNewJobSema.V(1)
+		return
+	}
+
+	worker := newWorker(roomId, closeChan)
+	workers[roomId] = worker
 }
 
 func generateReport() *model.ReportPayload {
@@ -99,4 +100,16 @@ func generateReport() *model.ReportPayload {
 		BasicWorkerInfo: basicInfo,
 		Workers:         wil,
 	}
+}
+
+func getWorkerInfoListAndSpeed() ([]*model.WorkerInfo, float64) {
+	speed := 0.0
+	list := make([]*model.WorkerInfo, 0, len(workers))
+	workersLock.RLock()
+	defer workersLock.RUnlock()
+	for _, worker := range workers {
+		list = append(list, worker.GetWorkerInfo())
+		speed += worker.speeder.GetSpeed()
+	}
+	return list, speed
 }

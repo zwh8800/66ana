@@ -17,31 +17,32 @@ import (
 
 func Run() {
 	updateCateInfo()
-	removeExpireWorkingRoom()
+	removeExpire()
 
-	service.SubscribeReport(func(payload *model.ReportPayload, err error) {
-		log.Println("Report:", util.JsonStringify(payload, false), "err:", err)
-		if err != nil {
-			return
-		}
-		dispatchTask(payload)
-	})
-
-	service.SubscribeSpiderClosed(func(payload *model.SpiderClosedPayload, err error) {
-		log.Println("SubscribeSpiderClosed:", util.JsonStringify(payload, false), "err:", err)
-		if err != nil {
-			return
-		}
-
-		if err := service.RemoveWorkingRoom(payload.RoomId); err != nil {
-			log.Println("service.RemoveWorkingRoom(", payload.RoomId, "):", err)
-		}
-		dispatchTask(payload.ReportPayload)
-	})
+	removeClosedSuccessChan := make(chan bool, 50)
 
 	go func() {
 		for {
-			removeExpireWorkingRoom()
+			select {
+			case <-removeClosedSuccessChan:
+				log.Println("dispatchLoop by removeClosedSuccessChan")
+			case <-time.After(10 * time.Second):
+				log.Println("dispatchLoop by ticker")
+			}
+			dispatchLoop()
+		}
+	}()
+
+	go func() {
+		for {
+			removeClosed()
+			removeClosedSuccessChan <- true
+		}
+	}()
+
+	go func() {
+		for {
+			removeExpire()
 			time.Sleep(1 * time.Second)
 		}
 	}()
@@ -53,32 +54,50 @@ func Run() {
 	}()
 }
 
-func dispatchTask(report *model.ReportPayload) {
-	if err := service.AddWorker(report.BasicWorkerInfo); err != nil {
-		log.Println("service.AddWorker(", util.JsonStringify(report.BasicWorkerInfo, false), "):", err)
+// TODO: 打上log，看看分配堆积是咋回事
+func dispatchLoop() {
+	workerCount, err := service.CountWorkers()
+	if err != nil {
+		log.Println("service.CountWorkers()", err)
 		return
 	}
 
-	for _, room := range report.Workers {
-		if err := service.RemoveFromWorkingRoomQueue(report.WorkerId, room.RoomId); err != nil {
-			log.Println("service.RemoveFromWorkingRoomQueue(", report.WorkerId, room.RoomId, "):", err)
-			return
+	countMap := make(map[string]int)
+	for i := int64(0); workerCount == 0 || i < workerCount; i++ {
+		report, err := service.GetWorkerReport()
+		if err != nil {
+			log.Println("service.GetWorkerReport():", err)
+			continue
 		}
-		if err := service.AddWorkingRoom(room.RoomId); err != nil {
-			log.Println("service.AddWorkingRoom(", room.RoomId, "):", err)
-			return
+		if err := service.AddWorker(report.BasicWorkerInfo); err != nil {
+			log.Println("service.AddWorker(", util.JsonStringify(report.BasicWorkerInfo, false), "):", err)
+			continue
 		}
+		for _, room := range report.Workers {
+			if err := service.AddWorkingRoom(room.RoomId); err != nil {
+				log.Println("service.AddWorkingRoom(", room.RoomId, "):", err)
+				return
+			}
+		}
+		n := report.Capacity - report.Working
+		countMap[report.WorkerId] = n
+
+		thisWorkerCount, err := service.CountWorkers()
+		if err != nil {
+			log.Println("service.CountWorkers()", err)
+			continue
+		}
+		workerCount = thisWorkerCount
 	}
 
-	queueLen, err := service.CountWorkingRoomQueue(report.WorkerId)
-	if err != nil {
-		log.Println("service.CountWorkingRoomQueue", report.WorkerId, "):", err)
+	totalDispatchCount := 0
+	for _, count := range countMap {
+		totalDispatchCount += count
 	}
 
-	n := int64(report.Capacity) - (int64(report.Working) + queueLen)
-	toStartList := make([]int64, 0)
+	roomIdToStart := make([]int64, 0)
 out:
-	for i := 0; n > 0; i++ {
+	for i := 0; totalDispatchCount > 0; i++ {
 		list, err := getLiveList(i)
 		if err != nil {
 			log.Println("getLiveList(", i, "):", err)
@@ -95,49 +114,54 @@ out:
 			if exist {
 				continue
 			}
-			exist, err = service.IsInWorkingRoomQueue(roomId)
-			if err != nil {
-				log.Println("service.IsInWorkingRoomQueue(", roomId, "):", err)
-				continue
-			}
-			if exist {
-				continue
-			}
 
-			if err := service.AddToWorkingRoomQueue(report.WorkerId, roomId); err != nil {
-				log.Println("service.AddToWorkingRoomQueue(", report.WorkerId, roomId, "):", err)
-				continue
-			}
+			roomIdToStart = append(roomIdToStart, roomId)
 
-			toStartList = append(toStartList, roomId)
-
-			n--
-			if n <= 0 {
+			totalDispatchCount--
+			if totalDispatchCount <= 0 {
 				break out
 			}
 		}
 	}
 
-	for _, roomId := range toStartList {
-		if err := service.PublishStartSpider(report.WorkerId, &model.StartSpiderPayload{
+	for _, roomId := range roomIdToStart {
+		if service.DispatchWork(&model.StartSpiderPayload{
 			RoomId: roomId,
 		}); err != nil {
-			log.Println("service.InsertDyCate:", err)
+			log.Println("service.DispatchWork:", err)
 		}
 	}
 }
 
-func removeExpireWorkingRoom() {
+func removeClosed() {
+	payload, err := service.PullSpiderClosed()
+	if err != nil {
+		log.Println("service.RemoveExpireWorker():", err)
+		return
+	}
+	if err := service.AddWorker(payload.BasicWorkerInfo); err != nil {
+		log.Println("service.AddWorker(", util.JsonStringify(payload.BasicWorkerInfo, false), "):", err)
+		return
+	}
+	for _, room := range payload.Workers {
+		if err := service.AddWorkingRoom(room.RoomId); err != nil {
+			log.Println("service.AddWorkingRoom(", room.RoomId, "):", err)
+			return
+		}
+	}
+	if err := service.RemoveWorkingRoom(payload.RoomId); err != nil {
+		log.Println("service.RemoveWorkingRoom(", payload.RoomId, "):", err)
+		return
+	}
+}
+
+func removeExpire() {
 	if err := service.RemoveExpireWorker(); err != nil {
 		log.Println("service.RemoveExpireWorker():", err)
 		return
 	}
 	if err := service.RemoveExpireWorkingRoom(); err != nil {
 		log.Println("service.RemoveExpireWorkingRoom():", err)
-		return
-	}
-	if err := service.RemoveExpireWorkingRoomQueue(); err != nil {
-		log.Println("service.RemoveExpireWorkingRoomQueue():", err)
 		return
 	}
 }
