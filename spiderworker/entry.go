@@ -74,10 +74,15 @@ func pullNewJob() {
 }
 
 func newJob(roomId int64) {
-	worker := newWorker(roomId, closeChan)
-
 	workersLock.Lock()
 	defer workersLock.Unlock()
+
+	if _, ok := workers[roomId]; ok {
+		pullNewJobSema.V(1)
+		return
+	}
+
+	worker := newWorker(roomId, closeChan)
 	workers[roomId] = worker
 }
 
