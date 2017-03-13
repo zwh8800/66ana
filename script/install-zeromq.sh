@@ -12,7 +12,7 @@ sudo ldconfig
 
 cd ..
 
-curl -O zeromq-4.2.1.tar.gz https://github.com/zeromq/libzmq/releases/download/v4.2.1/zeromq-4.2.1.tar.gz
+wget -O zeromq-4.2.1.tar.gz https://github.com/zeromq/libzmq/releases/download/v4.2.1/zeromq-4.2.1.tar.gz
 tar -xvf zeromq-4.2.1.tar.gz
 cd zeromq-4.2.1
 ./autogen.sh
