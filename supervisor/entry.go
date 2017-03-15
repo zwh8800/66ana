@@ -115,7 +115,7 @@ out:
 			}
 
 			roomIdToStart[roomId] = true
-			if len(roomIdToStart) < totalDispatchCount {
+			if len(roomIdToStart) >= totalDispatchCount {
 				break out
 			}
 		}
