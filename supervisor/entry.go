@@ -54,7 +54,6 @@ func Run() {
 	}()
 }
 
-// TODO: 打上log，看看分配堆积是咋回事
 func dispatchLoop() {
 	workerCount, err := service.CountWorkers()
 	if err != nil {
@@ -95,9 +94,9 @@ func dispatchLoop() {
 		totalDispatchCount += count
 	}
 
-	roomIdToStart := make([]int64, 0)
+	roomIdToStart := make(map[int64]bool, totalDispatchCount)
 out:
-	for i := 0; totalDispatchCount > 0; i++ {
+	for i := 0; len(roomIdToStart) < totalDispatchCount; i++ {
 		list, err := getLiveList(i)
 		if err != nil {
 			log.Println("getLiveList(", i, "):", err)
@@ -115,16 +114,14 @@ out:
 				continue
 			}
 
-			roomIdToStart = append(roomIdToStart, roomId)
-
-			totalDispatchCount--
-			if totalDispatchCount <= 0 {
+			roomIdToStart[roomId] = true
+			if len(roomIdToStart) < totalDispatchCount {
 				break out
 			}
 		}
 	}
 
-	for _, roomId := range roomIdToStart {
+	for roomId := range roomIdToStart {
 		if service.DispatchWork(&model.StartSpiderPayload{
 			RoomId: roomId,
 		}); err != nil {
