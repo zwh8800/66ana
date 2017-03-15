@@ -53,7 +53,7 @@ func checkClosed() {
 			RoomId:        roomId,
 			ReportPayload: generateReport(),
 		}); err != nil {
-			log.Println("service.PullWork():", err)
+			log.Println("service.PushWorkerClosed():", err)
 			continue
 		}
 	}
