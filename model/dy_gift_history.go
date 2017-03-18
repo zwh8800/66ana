@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 const DyGiftHistoryTableName = "dy_gift_history"
 
 type DyGiftHistory struct {
@@ -14,5 +16,21 @@ type DyGiftHistory struct {
 }
 
 func (*DyGiftHistory) TableName() string {
-	return DyGiftHistoryTableName
+	return DyGiftHistoryTableName + "_" + time.Now().Format("20060102")
+}
+
+type DyGiftHistoryWithDay struct {
+	DyGiftHistory
+
+	day time.Time `gorm:"-"`
+}
+
+func NewDyGiftHistoryWithDay(day time.Time) *DyGiftHistoryWithDay {
+	return &DyGiftHistoryWithDay{
+		day: day,
+	}
+}
+
+func (m *DyGiftHistoryWithDay) TableName() string {
+	return DyGiftHistoryTableName + "_" + m.day.Format("20060102")
 }

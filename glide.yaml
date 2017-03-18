@@ -12,3 +12,5 @@ import:
 - package: github.com/labstack/echo
   version: ~3.0.3
 - package: github.com/pebbe/zmq4
+- package: github.com/robfig/cron
+  version: ~1.0.0

@@ -12,7 +12,7 @@ import (
 	"golang.org/x/net/proxy"
 )
 
-var proxyPool = NewProxyPoll(conf.Conf.Proxy.ProxyList)
+var proxyPool = NewProxyPoll(conf.Conf.SpiderWorker.ProxyList)
 
 type worker struct {
 	roomId    int64
