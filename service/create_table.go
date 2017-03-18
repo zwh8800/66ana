@@ -94,7 +94,7 @@ var (
 func CreateFurtherTable(count int64) error {
 	day := time.Now()
 	for i := int64(0); i < count; i++ {
-		day.Add(time.Duration(i * 24 * int64(time.Hour)))
+		day = day.Add(time.Duration(1 * 24 * int64(time.Hour)))
 		for j, sql := range createSqlList {
 			dayStr := day.Format("20060102")
 			tableName := createTableName[j] + "_" + dayStr
