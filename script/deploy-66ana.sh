@@ -69,7 +69,7 @@ cd ~
 proxy apt-get -y install libtool pkg-config build-essential autoconf automake
 proxy apt-get -y install libzmq-dev
 
-git clone git://github.com/jedisct1/libsodium.git
+proxy git clone https://github.com/jedisct1/libsodium
 cd libsodium
 ./autogen.sh
 ./configure && make check
