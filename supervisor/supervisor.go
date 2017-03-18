@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/robfig/cron"
 	"github.com/zwh8800/66ana/conf"
 	"github.com/zwh8800/66ana/model"
 	"github.com/zwh8800/66ana/service"
@@ -16,6 +17,12 @@ import (
 )
 
 func Run() {
+	if err := service.CreateFurtherTable(5); err != nil {
+		panic(err)
+	}
+
+	setupCron()
+
 	updateCateInfo()
 	removeExpire()
 
@@ -52,6 +59,17 @@ func Run() {
 			time.Sleep(1 * time.Minute)
 		}
 	}()
+}
+
+func setupCron() {
+	crontab := cron.New()
+	crontab.AddFunc("0 50 23 * * *", func() {
+		service.SupervisorPushJob(&model.JobPayload{
+			JobName: "createFurtherTable",
+		})
+	})
+
+	crontab.Start()
 }
 
 func dispatchLoop() {

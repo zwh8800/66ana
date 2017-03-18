@@ -33,6 +33,7 @@ type config struct {
 	SpiderWorker struct {
 		IsSpiderWorker bool
 		Capacity       int
+		ProxyList      []string
 	}
 
 	Web struct {
@@ -40,8 +41,8 @@ type config struct {
 		Address string
 	}
 
-	Proxy struct {
-		ProxyList []string
+	JobWorker struct {
+		IsJobWorker bool
 	}
 }
 

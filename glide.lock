@@ -1,5 +1,5 @@
-hash: 8fefd490b90e438d87f85c06bf5dd4e93cab6b4f38f940ea26181c26e2ceb891
-updated: 2017-02-12T00:29:59.940814751+08:00
+hash: 044e015c67a1091d19a6370be1de6a83990f91a10233b5c75323af9001fd04ee
+updated: 2017-03-18T21:18:20.953930879+08:00
 imports:
 - name: github.com/BurntSushi/toml
   version: bbd5bb678321a0d6e58f1099321dfa73391c1b6f
@@ -12,46 +12,48 @@ imports:
 - name: github.com/labstack/echo
   version: 8d504c1b699c757b267255c53b3e5219f9974abc
 - name: github.com/labstack/gommon
-  version: f72d3c883f8ea180da8f085dd320804c41332ad1
+  version: 9cedb429ffbe71a32a3ae7c65fd109cb7ae07804
   subpackages:
   - color
   - log
 - name: github.com/lib/pq
-  version: 8df6253d1317616f36b0c3740eb30c239a7372cb
+  version: 472a0745531a17dbac346e828b4c60e73ddff30c
   subpackages:
   - hstore
   - oid
 - name: github.com/mattn/go-colorable
-  version: 5411d3eea5978e6cdc258b30de592b60df6aba96
+  version: a392f450ea64cee2b268dfaacdc2502b50a22b18
 - name: github.com/mattn/go-isatty
-  version: 281032e84ae07510239465db46bf442aa44b953a
+  version: 57fdcb988a5c543893cc61bce354a6e24ab70022
 - name: github.com/pebbe/zmq4
-  version: 86a301353efd154593d5c851a092dc21e907a601
+  version: 7157c0d6df4e6bfcae60a6f20cffaee88ac1ab30
+- name: github.com/robfig/cron
+  version: b024fc5ea0e34bc3f83d9941c8d60b0622bfaca4
 - name: github.com/satori/go.uuid
   version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: github.com/tylerb/graceful
-  version: 4654dfbb6ad53cb5e27f37d99b02e16c1872fbbb
+  version: d72b0151351a13d0421b763b88f791469c4f5dc7
 - name: github.com/valyala/bytebufferpool
   version: e746df99fe4a3986f4d4f79e13c1e0117ce9c2f7
 - name: github.com/valyala/fasttemplate
-  version: d090d65668a286d9a180d43a19dfdc5dcad8fe88
+  version: dcecefd839c4193db0d35b88ec65b4c12d360ab0
 - name: golang.org/x/crypto
-  version: 453249f01cfeb54c3d549ddb75ff152ca243f9d8
+  version: 459e26527287adbc2adcc5d0d49abff9a5f315a7
   subpackages:
   - acme
   - acme/autocert
 - name: golang.org/x/net
-  version: 61557ac0112b576429a0df080e1c2cef5dfbb642
+  version: a6577fac2d73be281a500b310739095313165611
   subpackages:
   - context
   - context/ctxhttp
   - proxy
 - name: golang.org/x/sys
-  version: aaabbdc969c3935a2a7f61efac801e7163c73a2a
+  version: 99f16d856c9836c42d24e7ab64ea72916925fa97
   subpackages:
   - unix
 - name: gopkg.in/redis.v5
-  version: 2fe9c5cc0a8da9faeba3a45511a4ece8f7e37dc2
+  version: a16aeec10ff407b1e7be6dd35797ccf5426ef0f0
   subpackages:
   - internal
   - internal/consistenthash
