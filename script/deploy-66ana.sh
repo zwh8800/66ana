@@ -1,12 +1,5 @@
 #!/usr/bin/env bash
 
-apt-get update
-
-apt-get install -y tzdata
-ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-echo "Asia/Shanghai" > /etc/timezone
-dpkg-reconfigure -f noninteractive tzdata
-
 export PATH=$PATH:/usr/local/go/bin
 export GOPATH=$HOME/go
 export PATH=$PATH:${GOPATH//://bin:}/bin
@@ -20,12 +13,19 @@ echo 'export PATH=$PATH:${GOPATH//://bin:}/bin' >> $HOME/.bashrc
 
 echo "alias proxy='env all_proxy=socks5://10.0.0.220:1080 http_proxy=http://10.0.0.220:8123 https_proxy=http://10.0.0.220:8123'" >> $HOME/.bashrc
 
+proxy apt-get update
+
+proxy apt-get install -y tzdata
+ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+echo "Asia/Shanghai" > /etc/timezone
+dpkg-reconfigure -f noninteractive tzdata
+
 proxy wget -O go1.8.linux-amd64.tar.gz https://storage.googleapis.com/golang/go1.8.linux-amd64.tar.gz
 tar xvf go1.8.linux-amd64.tar.gz -C /usr/local/
 
 go version
 
-apt-get install git -y
+proxy apt-get install git -y
 
 retry=5
 while [ $retry -gt 0 ]; do
@@ -66,8 +66,8 @@ fi
 
 cd ~
 
-apt-get -y install libtool pkg-config build-essential autoconf automake
-apt-get -y install libzmq-dev
+proxy apt-get -y install libtool pkg-config build-essential autoconf automake
+proxy apt-get -y install libzmq-dev
 
 git clone git://github.com/jedisct1/libsodium.git
 cd libsodium
