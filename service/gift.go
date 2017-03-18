@@ -53,9 +53,11 @@ func InsertDyGiftHistory(message map[string]string) (*model.DyGiftHistory, error
 	giftHistory.UserId = int64(user.ID)
 	giftHistory.RoomId = int64(room.ID)
 	giftHistory.GiftId = int64(gift.ID)
+	createdAt := giftHistory.CreatedAt
 	if err := tx.Create(giftHistory).Error; err != nil {
 		return nil, err
 	}
+	tx.Model(giftHistory).Update("CreatedAt", createdAt)
 
 	if err := tx.Commit().Error; err != nil {
 		return nil, err

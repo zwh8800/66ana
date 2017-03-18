@@ -46,9 +46,11 @@ func InsertDyDanmu(message map[string]string) (*model.DyDanmu, error) {
 
 	danmu.RoomId = int64(room.ID)
 	danmu.UserId = int64(user.ID)
+	createdAt := danmu.CreatedAt
 	if err := tx.Create(danmu).Error; err != nil {
 		return nil, err
 	}
+	tx.Model(danmu).Update("CreatedAt", createdAt)
 
 	if err := tx.Commit().Error; err != nil {
 		return nil, err
