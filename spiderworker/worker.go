@@ -138,11 +138,13 @@ func (w *worker) pullRoomInfo() {
 	roomInfo, err := w.spider.GetRoomInfo()
 	if err != nil {
 		log.Println("spider.GetRoomInfo:", err)
+		w.close()
 		return
 	}
 	room, err := service.InsertDyRoom(roomInfo)
 	if err != nil {
 		log.Println("service.InsertDyRoom:", err)
+		w.close()
 		return
 	}
 	if room.OnlineCount < conf.Conf.Spider.MinOnlineCount {

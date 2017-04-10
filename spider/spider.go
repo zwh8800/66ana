@@ -239,7 +239,7 @@ func (s *Spider) GetRoomInfo() (*model.RoomInfo, error) {
 		if err := json.Unmarshal(roomInfoJson.Data, &errMsg); err != nil {
 			return nil, err
 		}
-		return nil, fmt.Errorf("roomInfo Error: %s", errMsg)
+		return nil, fmt.Errorf("roomInfo error code: %d, message: %s", roomInfoJson.Error, errMsg)
 	}
 
 	var roomInfo model.RoomInfo
