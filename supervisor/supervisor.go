@@ -63,7 +63,10 @@ func Run() {
 
 func setupCron() {
 	crontab := cron.New()
-	crontab.AddFunc("0 50 23 * * *", func() {
+	crontab.AddFunc("0 * * * * ?", func() {
+		log.Println("log from cron tab, every 1min")
+	})
+	crontab.AddFunc("0 50 23 * * ?", func() {
 		log.Println("push createFurtherTable job")
 		service.SupervisorPushJob(&model.JobPayload{
 			JobName: "createFurtherTable",
