@@ -14,8 +14,8 @@ type DyDeserve struct {
 	Hits   int
 }
 
-func (*DyDeserve) TableName() string {
-	return DyDeserveTableName + "_" + time.Now().Format("20060102")
+func (m *DyDeserve) TableName() string {
+	return DyDeserveTableName + "_" + m.CreatedAt.Format("20060102")
 }
 
 type DyDeserveWithDay struct {

@@ -16,8 +16,8 @@ type DyDanmu struct {
 	Client  DyClientType
 }
 
-func (*DyDanmu) TableName() string {
-	return DyDanmuTableName + "_" + time.Now().Format("20060102")
+func (m *DyDanmu) TableName() string {
+	return DyDanmuTableName + "_" + m.CreatedAt.Format("20060102")
 }
 
 type DyDanmuWithDay struct {

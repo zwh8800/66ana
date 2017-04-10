@@ -15,8 +15,8 @@ type DyGiftHistory struct {
 	GiftStyle string
 }
 
-func (*DyGiftHistory) TableName() string {
-	return DyGiftHistoryTableName + "_" + time.Now().Format("20060102")
+func (m *DyGiftHistory) TableName() string {
+	return DyGiftHistoryTableName + "_" + m.CreatedAt.Format("20060102")
 }
 
 type DyGiftHistoryWithDay struct {
