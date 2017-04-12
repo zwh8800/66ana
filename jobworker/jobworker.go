@@ -21,7 +21,7 @@ func Run() {
 }
 
 func dispatchJob(payload *model.JobPayload) {
-	switch payload {
+	switch payload.JobName {
 	case "createFurtherTable":
 		createfurthertable.CreateFurtherTable(payload.Data)
 	}
